@@ -152,14 +152,14 @@ function displayExpenses(expensesToShow = expenses) {
         return `
             <div class="expense-item fade-in">
                 <div class="expense-info">
-                    <div class="expense-title">${expense.title}</div>
+                    <div class="expense-title">${escapeHTML(expense.title)}</div>
                     <div class="expense-details">
                         <span>${categoryIcon} ${getCategoryName(expense.category)}</span>
                         <span>📅 ${formattedDate}</span>
                     </div>
                 </div>
                 <div class="expense-amount">₹${expense.amount.toLocaleString('en-IN')}</div>
-                <button class="delete-btn" onclick="deleteExpense(${expense.id})">
+                <button class="delete-btn" data-id="${expense.id}" aria-label="Delete ${escapeHTML(expense.title)}">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -167,6 +167,21 @@ function displayExpenses(expensesToShow = expenses) {
     }).join('');
     
     expensesList.innerHTML = expensesHTML;
+}
+
+// Delete button clicks (event delegation - one listener for the whole list)
+expensesList.addEventListener('click', function(e) {
+    const button = e.target.closest('.delete-btn');
+    if (button) {
+        deleteExpense(Number(button.dataset.id));
+    }
+});
+
+// Escape user-provided text before inserting it into HTML
+function escapeHTML(text) {
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML.replace(/"/g, '&quot;');
 }
 
 // Get Category Icon
@@ -312,16 +327,18 @@ function showAlert(message, type = 'info') {
     };
     alert.style.background = colors[type] || colors.info;
     
-    // Set alert content
-    alert.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span>${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" 
-                    style="background: none; border: none; color: white; font-size: 18px; cursor: pointer; margin-left: 10px;">
-                ×
-            </button>
-        </div>
-    `;
+    // Set alert content (textContent keeps user input from being parsed as HTML)
+    const content = document.createElement('div');
+    content.style.cssText = 'display: flex; justify-content: space-between; align-items: center;';
+    const text = document.createElement('span');
+    text.textContent = message;
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '×';
+    closeBtn.setAttribute('aria-label', 'Dismiss');
+    closeBtn.style.cssText = 'background: none; border: none; color: white; font-size: 18px; cursor: pointer; margin-left: 10px;';
+    closeBtn.addEventListener('click', () => alert.remove());
+    content.append(text, closeBtn);
+    alert.appendChild(content);
     
     // Add to page
     document.body.appendChild(alert);
