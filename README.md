@@ -11,6 +11,7 @@ A smart, responsive web application for tracking personal expenses with advanced
 - **Budget Setting**: Set monthly budget with real-time tracking
 - **Smart Alerts**: Budget warnings and notifications
 - **Data Persistence**: Automatic saving with localStorage
+- **CSV Export**: Download all expenses as a spreadsheet-friendly CSV file
 
 ### 🔍 Advanced Search & Filter
 - **Linear Search Algorithm**: Real-time search across titles, categories, and amounts
@@ -31,6 +32,11 @@ A smart, responsive web application for tracking personal expenses with advanced
 - **Interactive Elements**: Smooth animations and transitions
 - **Category Icons**: Visual representation of expense categories
 - **Real-time Feedback**: Instant alerts and notifications
+- **Accessible**: Keyboard-friendly controls, screen-reader labels and reduced-motion support
+
+### ⌨️ Keyboard Shortcuts
+- **Alt + N**: Jump to the "Add Expense" form
+- **Escape**: Close the mobile menu
 
 ## 🧠 Data Structures & Algorithms
 
@@ -77,7 +83,7 @@ expensesArray.sort((a, b) => {
 |-----------|----------------|------------------|
 | Add Expense | O(1) | O(1) |
 | Search | O(n) | O(k) |
-| Sort | O(n log n) | O(1) |
+| Sort | O(n log n) | O(n) (sorts a filtered copy) |
 | Filter | O(n) | O(k) |
 | Delete | O(n) | O(1) |
 
@@ -96,6 +102,7 @@ expense-tracker/
 ├── index.html          # Main HTML structure
 ├── style.css           # Responsive CSS styling
 ├── script.js           # JavaScript logic & DSA implementations
+├── LICENSE             # MIT License
 └── README.md           # Project documentation
 ```
 
@@ -130,6 +137,7 @@ expense-tracker/
 - Search for expenses using partial text (e.g., "foo" finds "food")
 - Combine search + category filter + sorting
 - Test responsive design on different screen sizes
+- Export your expenses to CSV and open them in Excel or Google Sheets
 
 ## 💡 Learning Outcomes
 
