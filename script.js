@@ -1,7 +1,11 @@
 // Global variables to store application data
 let budget = 0;
 let expenses = [];
-let totalExpenses = 0;
+
+// Total is always derived from the expenses array so it can never drift out of sync
+function getTotalExpenses() {
+    return expenses.reduce((sum, expense) => sum + expense.amount, 0);
+}
 
 // DOM Elements
 const hamburger = document.querySelector('.hamburger');
@@ -75,7 +79,7 @@ expenseForm.addEventListener('submit', function(e) {
     e.preventDefault();
     
     const title = document.getElementById('expenseTitle').value.trim();
-    const amount = parseFloat(document.getElementById('expenseAmount').value);
+    const amount = Math.round(parseFloat(document.getElementById('expenseAmount').value) * 100) / 100;
     const category = document.getElementById('expenseCategory').value;
     const date = document.getElementById('expenseDate').value;
     
@@ -102,11 +106,10 @@ expenseForm.addEventListener('submit', function(e) {
     
     // Add to expenses array
     expenses.unshift(expense); // Add to beginning of array
-    totalExpenses += amount;
     
-    // Update display
+    // Update display (keeps any active search/filter/sort)
     updateBudgetDisplay();
-    displayExpenses();
+    refreshExpenses();
     
     // Clear form
     expenseForm.reset();
@@ -121,6 +124,7 @@ expenseForm.addEventListener('submit', function(e) {
 
 // Update Budget Display
 function updateBudgetDisplay() {
+    const totalExpenses = getTotalExpenses();
     document.getElementById('totalBudget').textContent = `₹${budget.toLocaleString('en-IN')}`;
     document.getElementById('totalExpenses').textContent = `₹${totalExpenses.toLocaleString('en-IN')}`;
     
@@ -230,11 +234,10 @@ function deleteExpense(id) {
     
     if (expenseIndex !== -1) {
         const deletedExpense = expenses[expenseIndex];
-        totalExpenses -= deletedExpense.amount;
         expenses.splice(expenseIndex, 1);
         
         updateBudgetDisplay();
-        displayExpenses();
+        refreshExpenses();
         saveToStorage(); // Save data to localStorage
         
         showAlert(`Expense "${deletedExpense.title}" deleted successfully!`, 'success');
@@ -276,9 +279,8 @@ function clearAllExpenses() {
     
     if (confirm('Are you sure you want to clear all expenses? This action cannot be undone.')) {
         expenses = [];
-        totalExpenses = 0;
         updateBudgetDisplay();
-        displayExpenses();
+        refreshExpenses();
         saveToStorage(); // Save data to localStorage
         showAlert('All expenses cleared successfully!', 'success');
     }
@@ -286,6 +288,7 @@ function clearAllExpenses() {
 
 // Check Budget Warning
 function checkBudgetWarning() {
+    const totalExpenses = getTotalExpenses();
     const remaining = budget - totalExpenses;
     const percentage = (totalExpenses / budget) * 100;
     
@@ -363,6 +366,7 @@ function showAlert(message, type = 'info') {
 
 // Calculate Statistics
 function getExpenseStats() {
+    const totalExpenses = getTotalExpenses();
     const stats = {
         totalExpenses: totalExpenses,
         expenseCount: expenses.length,
@@ -438,13 +442,6 @@ function searchExpenses() {
     if (query) {
         // Linear Search Implementation - O(n) time complexity
         filteredExpenses = linearSearchExpenses(filteredExpenses, query);
-        
-        // Show search feedback
-        if (filteredExpenses.length === 0) {
-            showAlert(`No expenses found matching "${query}"`, 'info');
-        } else if (query.length > 2) { // Only show success for meaningful searches
-            showAlert(`🔍 Found ${filteredExpenses.length} expense(s) matching "${query}"`, 'success');
-        }
     }
     
     // Apply category filter
@@ -458,6 +455,11 @@ function searchExpenses() {
     }
     
     displayExpenses(filteredExpenses);
+}
+
+// Re-render the list with the current search/filter/sort applied
+function refreshExpenses() {
+    searchExpenses();
 }
 
 // Clear all filters and search
@@ -621,8 +623,7 @@ function saveToStorage() {
     try {
         localStorage.setItem('expenseTracker', JSON.stringify({
             budget: budget,
-            expenses: expenses,
-            totalExpenses: totalExpenses
+            expenses: expenses
         }));
     } catch (error) {
         console.error('Error saving to localStorage:', error);
@@ -634,16 +635,17 @@ function loadFromStorage() {
         const saved = localStorage.getItem('expenseTracker');
         if (saved) {
             const data = JSON.parse(saved);
-            budget = data.budget || 0;
-            expenses = data.expenses || [];
-            totalExpenses = data.totalExpenses || 0;
+            budget = Number(data.budget) > 0 ? Number(data.budget) : 0;
+            // Drop any malformed records so one bad entry can't break the app
+            expenses = Array.isArray(data.expenses)
+                ? data.expenses.filter(e => e && typeof e.title === 'string' && Number.isFinite(e.amount) && e.date)
+                : [];
         }
     } catch (error) {
         console.error('Error loading from localStorage:', error);
         // Reset data on error
         budget = 0;
         expenses = [];
-        totalExpenses = 0;
     }
 }
 
@@ -723,7 +725,6 @@ function addSampleData() {
         ];
         
         expenses = sampleExpenses;
-        totalExpenses = sampleExpenses.reduce((sum, expense) => sum + expense.amount, 0);
         budget = 15000; // Sample budget
         
         updateBudgetDisplay();
