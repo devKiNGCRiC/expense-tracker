@@ -127,12 +127,12 @@ expenseForm.addEventListener('submit', function(e) {
 // Update Budget Display
 function updateBudgetDisplay() {
     const totalExpenses = getTotalExpenses();
-    document.getElementById('totalBudget').textContent = `₹${budget.toLocaleString('en-IN')}`;
-    document.getElementById('totalExpenses').textContent = `₹${totalExpenses.toLocaleString('en-IN')}`;
+    document.getElementById('totalBudget').textContent = formatCurrency(budget);
+    document.getElementById('totalExpenses').textContent = formatCurrency(totalExpenses);
     
     const remaining = budget - totalExpenses;
     const remainingElement = document.getElementById('remainingBudget');
-    remainingElement.textContent = `₹${remaining.toLocaleString('en-IN')}`;
+    remainingElement.textContent = formatCurrency(remaining);
     
     // Color coding for remaining budget
     if (remaining < 0) {
@@ -164,7 +164,7 @@ function displayExpenses(expensesToShow = expenses) {
                         <span>📅 ${formattedDate}</span>
                     </div>
                 </div>
-                <div class="expense-amount">₹${expense.amount.toLocaleString('en-IN')}</div>
+                <div class="expense-amount">${formatCurrency(expense.amount)}</div>
                 <button class="delete-btn" data-id="${expense.id}" aria-label="Delete ${escapeHTML(expense.title)}">
                     <i class="fas fa-trash"></i>
                 </button>
@@ -381,42 +381,7 @@ function showAlert(message, type = 'info') {
     }, 4000);
 }
 
-// Calculate Statistics
-function getExpenseStats() {
-    const totalExpenses = getTotalExpenses();
-    const stats = {
-        totalExpenses: totalExpenses,
-        expenseCount: expenses.length,
-        averageExpense: expenses.length > 0 ? totalExpenses / expenses.length : 0,
-        categoryBreakdown: {},
-        dailyAverage: 0
-    };
-    
-    // Calculate category breakdown
-    expenses.forEach(expense => {
-        if (!stats.categoryBreakdown[expense.category]) {
-            stats.categoryBreakdown[expense.category] = 0;
-        }
-        stats.categoryBreakdown[expense.category] += expense.amount;
-    });
-    
-    // Calculate daily average for current month
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const daysInMonth = now.getDate();
-    
-    const monthlyExpenses = expenses.filter(expense => {
-        const expenseDate = parseLocalDate(expense.date);
-        return expenseDate >= firstDayOfMonth;
-    });
-    
-    const monthlyTotal = monthlyExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-    stats.dailyAverage = daysInMonth > 0 ? monthlyTotal / daysInMonth : 0;
-    
-    return stats;
-}
-
-// Export expenses to CSV (for future use)
+// Export expenses to CSV
 function exportExpenses() {
     if (expenses.length === 0) {
         showAlert('No expenses to export!', 'info');
@@ -431,9 +396,10 @@ function exportExpenses() {
             getCategoryName(expense.category),
             expense.amount
         ])
-    ].map(row => row.join(',')).join('\n');
+    ].map(row => row.map(toCSVField).join(',')).join('\r\n');
     
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    // BOM so Excel opens the file as UTF-8 (₹ and emoji stay intact)
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -444,6 +410,18 @@ function exportExpenses() {
     window.URL.revokeObjectURL(url);
     
     showAlert('Expenses exported successfully!', 'success');
+}
+
+// Quote a CSV field when needed and neutralise spreadsheet formulas
+function toCSVField(value) {
+    let text = String(value);
+    if (/^[=+\-@]/.test(text)) {
+        text = "'" + text;
+    }
+    if (/[",\r\n]/.test(text)) {
+        text = '"' + text.replace(/"/g, '""') + '"';
+    }
+    return text;
 }
 
 // Search expenses (DSA Feature - Linear Search Algorithm)
@@ -585,23 +563,13 @@ function applySorting(expensesArray, sortType) {
     }
 }
 
-// Get expenses by date range
-function getExpensesByDateRange(startDate, endDate) {
-    return expenses.filter(expense => {
-        const expenseDate = parseLocalDate(expense.date);
-        const start = parseLocalDate(startDate);
-        const end = parseLocalDate(endDate);
-        return expenseDate >= start && expenseDate <= end;
-    });
-}
-
 // Format currency in Indian format
 function formatCurrency(amount) {
     return new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
         minimumFractionDigits: 0,
-        maximumFractionDigits: 0
+        maximumFractionDigits: 2
     }).format(amount);
 }
 
@@ -662,14 +630,6 @@ function loadFromStorage() {
     }
 }
 
-function clearStorage() {
-    try {
-        localStorage.removeItem('expenseTracker');
-    } catch (error) {
-        console.error('Error clearing localStorage:', error);
-    }
-}
-
 // Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
     // Ctrl+N or Cmd+N to focus on expense title input
@@ -686,36 +646,20 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Input formatting for amount field
-document.getElementById('expenseAmount').addEventListener('input', function(e) {
-    let value = e.target.value;
-    // Remove any non-digit characters except decimal point
-    value = value.replace(/[^\d.]/g, '');
-    // Ensure only one decimal point
+// Keep amount inputs to digits with at most one decimal point and 2 decimal places
+function sanitizeAmountInput(e) {
+    let value = e.target.value.replace(/[^\d.]/g, '');
     const parts = value.split('.');
-    if (parts.length > 2) {
-        value = parts[0] + '.' + parts.slice(1).join('');
+    if (parts.length > 1) {
+        value = parts[0] + '.' + parts.slice(1).join('').substring(0, 2);
     }
-    // Limit decimal places to 2
-    if (parts[1] && parts[1].length > 2) {
-        value = parts[0] + '.' + parts[1].substring(0, 2);
+    if (value !== e.target.value) {
+        e.target.value = value;
     }
-    e.target.value = value;
-});
+}
 
-// Budget input formatting
-budgetInput.addEventListener('input', function(e) {
-    let value = e.target.value;
-    value = value.replace(/[^\d.]/g, '');
-    const parts = value.split('.');
-    if (parts.length > 2) {
-        value = parts[0] + '.' + parts.slice(1).join('');
-    }
-    if (parts[1] && parts[1].length > 2) {
-        value = parts[0] + '.' + parts[1].substring(0, 2);
-    }
-    e.target.value = value;
-});
+document.getElementById('expenseAmount').addEventListener('input', sanitizeAmountInput);
+budgetInput.addEventListener('input', sanitizeAmountInput);
 
 // Console welcome message
 console.log(`
@@ -727,23 +671,3 @@ console.log(`
 🚀 Built with HTML5, CSS3, and Vanilla JavaScript
 `);
 
-// Add some sample data for demonstration (remove in production)
-function addSampleData() {
-    if (expenses.length === 0) {
-        const sampleExpenses = [
-            { id: 1, title: 'Lunch at office', amount: 150, category: 'food', date: '2025-09-01' },
-            { id: 2, title: 'Uber ride', amount: 80, category: 'transport', date: '2025-08-31' },
-            { id: 3, title: 'Movie tickets', amount: 300, category: 'entertainment', date: '2025-08-30' },
-            { id: 4, title: 'Grocery shopping', amount: 1200, category: 'shopping', date: '2025-08-29' }
-        ];
-        
-        expenses = sampleExpenses;
-        budget = 15000; // Sample budget
-        
-        updateBudgetDisplay();
-        displayExpenses();
-    }
-}
-
-// Uncomment the next line to see sample data (for demo purposes)
-// addSampleData();
