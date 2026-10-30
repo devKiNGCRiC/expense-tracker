@@ -1,6 +1,6 @@
 # 💰 Personal Expense Tracker
 
-A smart, responsive web application for tracking personal expenses with advanced DSA implementations. Built with vanilla HTML, CSS, and JavaScript, this project demonstrates practical applications of Data Structures and Algorithms in web development.
+A responsive web app for tracking personal expenses against a monthly budget. Built with vanilla HTML, CSS, and JavaScript, it also serves as a small, practical showcase of searching, filtering and sorting algorithms.
 
 🌐 **Live Demo**: [View Live Site](https://devKiNGCRiC.github.io/expense-tracker)
 
@@ -13,7 +13,7 @@ A smart, responsive web application for tracking personal expenses with advanced
 - **Data Persistence**: Automatic saving with localStorage
 - **CSV Export**: Download all expenses as a spreadsheet-friendly CSV file
 
-### 🔍 Advanced Search & Filter
+### 🔍 Search & Filter
 - **Linear Search Algorithm**: Real-time search across titles, categories, and amounts
 - **Category Filtering**: Filter expenses by specific categories
 - **Combined Operations**: Search + Filter + Sort working together
@@ -81,7 +81,7 @@ expensesArray.sort((a, b) => {
 
 | Operation | Time Complexity | Space Complexity |
 |-----------|----------------|------------------|
-| Add Expense | O(1) | O(1) |
+| Add Expense | O(n) (`unshift` shifts existing items) | O(1) |
 | Search | O(n) | O(k) |
 | Sort | O(n log n) | O(n) (sorts a filtered copy) |
 | Filter | O(n) | O(k) |
@@ -89,11 +89,11 @@ expensesArray.sort((a, b) => {
 
 ## 🚀 Technologies Used
 
-- **HTML5**: Semantic structure and accessibility
+- **HTML5**: Semantic structure with labelled form controls
 - **CSS3**: Modern styling with Flexbox and animations
 - **Vanilla JavaScript**: Pure JS implementation (no frameworks)
 - **LocalStorage API**: Client-side data persistence
-- **Responsive Design**: Mobile-first approach
+- **Responsive Design**: Media queries for tablet and phone widths
 
 ## 📁 Project Structure
 
@@ -144,7 +144,6 @@ expense-tracker/
 This project demonstrates:
 - **Practical DSA Application**: Real-world use of algorithms
 - **Algorithm Integration**: Combining multiple algorithms effectively
-- **Performance Optimization**: Efficient data handling
 - **Modern Web Development**: Responsive, accessible design
 - **Code Organization**: Clean, maintainable JavaScript
 
@@ -159,11 +158,10 @@ This project demonstrates:
 - Multi-criteria sorting algorithms
 - Algorithm chaining and composition
 - Time/space complexity analysis
-- String matching algorithms
+- Substring matching with `String.prototype.includes`
 
 ### Advanced Concepts
-- Stable sorting implementations
-- Algorithm optimization techniques
+- Stable multi-key sorting with the built-in `Array.prototype.sort` (stable since ES2019)
 - Data persistence patterns
 
 ## 🤝 Contributing
