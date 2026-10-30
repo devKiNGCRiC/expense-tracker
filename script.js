@@ -33,16 +33,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Mobile Navigation Toggle
 hamburger.addEventListener('click', function() {
-    hamburger.classList.toggle('active');
-    navMenu.classList.toggle('active');
+    const isOpen = navMenu.classList.toggle('active');
+    hamburger.classList.toggle('active', isOpen);
+    hamburger.setAttribute('aria-expanded', String(isOpen));
 });
+
+function closeMobileMenu() {
+    hamburger.classList.remove('active');
+    navMenu.classList.remove('active');
+    hamburger.setAttribute('aria-expanded', 'false');
+}
 
 // Close mobile menu when clicking on a nav link
 document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', function() {
-        hamburger.classList.remove('active');
-        navMenu.classList.remove('active');
-    });
+    link.addEventListener('click', closeMobileMenu);
 });
 
 // Smooth scrolling for navigation links
@@ -74,6 +78,12 @@ function setBudget() {
     saveToStorage(); // Save data to localStorage
     showAlert('Budget set successfully!', 'success');
 }
+
+// Budget form submit (also lets Enter set the budget)
+document.getElementById('budgetForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    setBudget();
+});
 
 // Add Expense Function
 expenseForm.addEventListener('submit', function(e) {
@@ -323,6 +333,7 @@ function showAlert(message, type = 'info') {
     // Create alert element
     const alert = document.createElement('div');
     alert.className = `alert alert-${type}`;
+    alert.setAttribute('role', type === 'error' ? 'alert' : 'status');
     alert.style.cssText = `
         position: fixed;
         top: 100px;
@@ -332,7 +343,8 @@ function showAlert(message, type = 'info') {
         color: white;
         font-weight: 600;
         z-index: 10000;
-        min-width: 300px;
+        min-width: min(300px, calc(100vw - 40px));
+        max-width: calc(100vw - 40px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         transform: translateX(400px);
         transition: transform 0.3s ease;
@@ -632,8 +644,9 @@ function loadFromStorage() {
 
 // Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
-    // Ctrl+N or Cmd+N to focus on expense title input
-    if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+    // Alt+N to focus on expense title input
+    // (Ctrl+N opens a new browser window and can't be overridden in most browsers)
+    if (e.altKey && e.key.toLowerCase() === 'n') {
         e.preventDefault();
         document.getElementById('expenseTitle').focus();
         showAlert('Quick Add: Start typing your expense!', 'info');
@@ -641,8 +654,7 @@ document.addEventListener('keydown', function(e) {
     
     // Escape to close mobile menu
     if (e.key === 'Escape') {
-        hamburger.classList.remove('active');
-        navMenu.classList.remove('active');
+        closeMobileMenu();
     }
 });
 
@@ -666,7 +678,7 @@ console.log(`
 🎉 Welcome to Personal Expense Tracker!
 📊 Track your expenses smartly and manage your budget effectively.
 💡 Keyboard Shortcuts:
-   • Ctrl/Cmd + N: Quick add expense
+   • Alt + N: Quick add expense
    • Escape: Close mobile menu
 🚀 Built with HTML5, CSS3, and Vanilla JavaScript
 `);

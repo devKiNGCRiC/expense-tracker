@@ -92,6 +92,9 @@ body {
     display: none;
     flex-direction: column;
     cursor: pointer;
+    background: none;
+    border: none;
+    padding: 5px;
 }
 
 .bar {
@@ -102,7 +105,46 @@ body {
     transition: 0.3s;
 }
 
+/* Hamburger to "X" when menu is open */
+.hamburger.active .bar:nth-child(1) {
+    transform: translateY(9px) rotate(45deg);
+}
+
+.hamburger.active .bar:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger.active .bar:nth-child(3) {
+    transform: translateY(-9px) rotate(-45deg);
+}
+
+/* Visible keyboard focus */
+.btn:focus-visible,
+.delete-btn:focus-visible,
+.hamburger:focus-visible,
+.nav-link:focus-visible {
+    outline: 3px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* Hide visually but keep available to screen readers */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* Main Content */
+html {
+    scroll-padding-top: 80px; /* keep anchored sections clear of the fixed navbar */
+}
+
 .main-content {
     margin-top: 70px;
     padding: 40px 0;
@@ -561,5 +603,15 @@ body {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }
