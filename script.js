@@ -19,9 +19,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load data from localStorage
     loadFromStorage();
     
-    // Set today's date as default
-    const today = new Date().toISOString().split('T')[0];
+    // Set today's date as default and block future dates
+    const today = getLocalDateString();
     document.getElementById('expenseDate').value = today;
+    document.getElementById('expenseDate').max = today;
     
     // Initialize display
     updateBudgetDisplay();
@@ -84,8 +85,9 @@ expenseForm.addEventListener('submit', function(e) {
     const date = document.getElementById('expenseDate').value;
     
     // Validation
-    if (!title || isNaN(amount) || amount <= 0 || !category || !date) {
-        showAlert('Please fill in all fields with valid data', 'error');
+    const errors = validateExpenseInput(title, amount, category, date);
+    if (errors.length > 0) {
+        showAlert(errors[0], 'error');
         return;
     }
     
@@ -113,7 +115,7 @@ expenseForm.addEventListener('submit', function(e) {
     
     // Clear form
     expenseForm.reset();
-    document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('expenseDate').value = getLocalDateString();
     
     saveToStorage(); // Save data to localStorage
     showAlert(`Expense "${title}" added successfully!`, 'success');
@@ -225,7 +227,22 @@ function formatDate(dateString) {
         month: 'short', 
         day: 'numeric' 
     };
-    return new Date(dateString).toLocaleDateString('en-IN', options);
+    return parseLocalDate(dateString).toLocaleDateString('en-IN', options);
+}
+
+// Today's date as YYYY-MM-DD in the user's timezone
+// (toISOString() uses UTC, which gives the wrong day around midnight)
+function getLocalDateString(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// Parse YYYY-MM-DD as a local date (new Date('YYYY-MM-DD') treats it as UTC)
+function parseLocalDate(dateString) {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day);
 }
 
 // Delete Expense
@@ -389,7 +406,7 @@ function getExpenseStats() {
     const daysInMonth = now.getDate();
     
     const monthlyExpenses = expenses.filter(expense => {
-        const expenseDate = new Date(expense.date);
+        const expenseDate = parseLocalDate(expense.date);
         return expenseDate >= firstDayOfMonth;
     });
     
@@ -420,7 +437,7 @@ function exportExpenses() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `expenses_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `expenses_${getLocalDateString()}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -571,9 +588,9 @@ function applySorting(expensesArray, sortType) {
 // Get expenses by date range
 function getExpensesByDateRange(startDate, endDate) {
     return expenses.filter(expense => {
-        const expenseDate = new Date(expense.date);
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+        const expenseDate = parseLocalDate(expense.date);
+        const start = parseLocalDate(startDate);
+        const end = parseLocalDate(endDate);
         return expenseDate >= start && expenseDate <= end;
     });
 }
@@ -592,7 +609,7 @@ function formatCurrency(amount) {
 function validateExpenseInput(title, amount, category, date) {
     const errors = [];
     
-    if (!title.trim()) {
+    if (!title || !title.trim()) {
         errors.push('Title is required');
     }
     
@@ -606,12 +623,8 @@ function validateExpenseInput(title, amount, category, date) {
     
     if (!date) {
         errors.push('Date is required');
-    } else {
-        const expenseDate = new Date(date);
-        const today = new Date();
-        if (expenseDate > today) {
-            errors.push('Expense date cannot be in the future');
-        }
+    } else if (date > getLocalDateString()) { // YYYY-MM-DD strings compare correctly
+        errors.push('Expense date cannot be in the future');
     }
     
     return errors;
