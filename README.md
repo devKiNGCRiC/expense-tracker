@@ -8,8 +8,11 @@ A responsive web app for tracking personal expenses against a monthly budget. Bu
 
 ### 💸 Expense Management
 - **Add Expenses**: Record daily expenses with title, amount, category, and date
-- **Budget Setting**: Set monthly budget with real-time tracking
-- **Smart Alerts**: Budget warnings and notifications
+- **Monthly Budget**: See how much is left this month; past months don't count against it
+- **Pace Meter**: Compares budget used with how far through the month you are, and suggests a daily allowance
+- **Category Breakdown**: This month's spending per category
+- **Budget Alerts**: A notice when spending crosses 50%, 80% and 100% of the budget
+- **Undo Delete**: Deleted expenses can be restored from the notification
 - **Data Persistence**: Automatic saving with localStorage
 - **CSV Export**: Download all expenses as a spreadsheet-friendly CSV file
 
@@ -29,14 +32,12 @@ A responsive web app for tracking personal expenses against a monthly budget. Bu
 
 ### 🎨 Modern UI/UX
 - **Responsive Design**: Works on desktop, tablet, and mobile
-- **Interactive Elements**: Smooth animations and transitions
 - **Category Icons**: Visual representation of expense categories
-- **Real-time Feedback**: Instant alerts and notifications
+- **Clear Feedback**: Short notifications, highlighted invalid fields, and distinct empty states
 - **Accessible**: Keyboard-friendly controls, screen-reader labels and reduced-motion support
 
 ### ⌨️ Keyboard Shortcuts
 - **Alt + N**: Jump to the "Add Expense" form
-- **Escape**: Close the mobile menu
 
 ## 🧠 Data Structures & Algorithms
 
@@ -127,8 +128,8 @@ expense-tracker/
      ```
 
 3. **Start tracking expenses**:
-   - Set your monthly budget
    - Add daily expenses
+   - Set a monthly budget (optional)
    - Use search and filter features
    - Explore different sorting options
 

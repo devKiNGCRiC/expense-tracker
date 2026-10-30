@@ -3,186 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Expense Tracker</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="description" content="Track daily expenses against a monthly budget in rupees. Data stays in your browser.">
+    <meta name="theme-color" content="#1D2B4F">
+    <title>Expense Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <a class="skip-link" href="#add">Skip to add expense</a>
+
     <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-wallet"></i>
-                <span>ExpenseTracker</span>
-            </div>
-            <ul class="nav-menu" id="navMenu">
-                <li class="nav-item">
-                    <a href="#home" class="nav-link">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a href="#expenses" class="nav-link">Expenses</a>
-                </li>
-                <li class="nav-item">
-                    <a href="#history" class="nav-link">History</a>
-                </li>
+    <header class="navbar">
+        <nav class="nav-container" aria-label="Main">
+            <a href="#overview" class="nav-logo">
+                <span class="logo-mark" aria-hidden="true">₹</span>
+                <span>Expense Tracker</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="#overview" class="nav-link">Overview</a></li>
+                <li><a href="#add" class="nav-link">Add</a></li>
+                <li><a href="#history" class="nav-link">History</a></li>
             </ul>
-            <button type="button" class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="navMenu">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </button>
-        </div>
-    </nav>
+        </nav>
+    </header>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Hero Section -->
-        <section id="home" class="hero">
-            <div class="container">
-                <h1>Track Your Expenses Smart</h1>
-                <p>Monitor your daily spending and manage your budget effectively</p>
-                <div class="budget-display">
-                    <div class="budget-item">
-                        <h3>Total Budget</h3>
-                        <p class="amount" id="totalBudget">₹0</p>
-                    </div>
-                    <div class="budget-item">
-                        <h3>Total Expenses</h3>
-                        <p class="amount expense" id="totalExpenses">₹0</p>
-                    </div>
-                    <div class="budget-item">
-                        <h3>Remaining</h3>
-                        <p class="amount remaining" id="remainingBudget">₹0</p>
-                    </div>
+    <main class="main-content container">
+        <!-- Overview: this month's budget -->
+        <section id="overview" class="overview" aria-labelledby="monthLabel">
+            <h1 id="monthLabel" class="month-label">This month</h1>
+
+            <p class="left-figure">
+                <span id="remainingBudget" class="left-amount">₹0</span>
+                <span id="remainingCaption" class="left-caption">left</span>
+            </p>
+            <p id="spentSummary" class="spent-summary">Spent ₹0 this month</p>
+
+            <div id="budgetMeter" class="meter" role="meter" aria-label="Share of monthly budget spent" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div id="meterFill" class="meter-fill"></div>
+                <div id="meterToday" class="meter-today" aria-hidden="true">
+                    <span id="meterTodayLabel" class="meter-today-label">Today</span>
                 </div>
+            </div>
+            <p id="paceMessage" class="pace-message">Set a monthly budget to see how much you have left.</p>
+
+            <form id="budgetForm" class="budget-form">
+                <label for="budgetInput">Monthly budget</label>
+                <div class="budget-form-row">
+                    <span class="input-prefix" aria-hidden="true">₹</span>
+                    <input type="text" inputmode="decimal" id="budgetInput" placeholder="e.g. 15000" autocomplete="off">
+                    <button type="submit" class="btn btn-secondary" id="budgetButton">Set budget</button>
+                </div>
+            </form>
+
+            <div class="breakdown">
+                <h2>Where it went</h2>
+                <ul id="categoryBreakdown" class="breakdown-list">
+                    <li class="breakdown-empty">Nothing spent this month yet.</li>
+                </ul>
             </div>
         </section>
 
-        <!-- Budget Setup -->
-        <section class="budget-setup">
-            <div class="container">
-                <div class="card">
-                    <h2>Set Monthly Budget</h2>
-                    <form id="budgetForm" class="input-group">
-                        <label for="budgetInput" class="sr-only">Monthly budget (₹)</label>
-                        <input type="text" inputmode="decimal" id="budgetInput" placeholder="Enter your monthly budget (₹)" autocomplete="off">
-                        <button type="submit" class="btn btn-primary" style="margin-top: 0.8rem;">Set Budget</button>
-                    </form>
-                </div>
+        <!-- Add Expense -->
+        <section id="add" class="add-expense" aria-labelledby="addHeading">
+            <div class="slip">
+                <h2 id="addHeading">Add an expense</h2>
+                <form id="expenseForm" novalidate>
+                    <div class="form-grid">
+                        <div class="input-group field-title">
+                            <label for="expenseTitle">What was it?</label>
+                            <input type="text" id="expenseTitle" placeholder="e.g. Lunch, Metro card" maxlength="100" autocomplete="off" required>
+                        </div>
+                        <div class="input-group field-amount">
+                            <label for="expenseAmount">Amount (₹)</label>
+                            <input type="text" inputmode="decimal" id="expenseAmount" placeholder="0" autocomplete="off" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="expenseCategory">Category</label>
+                            <select id="expenseCategory" required>
+                                <option value="">Choose…</option>
+                                <option value="food">🍽️ Food & Dining</option>
+                                <option value="transport">🚗 Transportation</option>
+                                <option value="entertainment">🎬 Entertainment</option>
+                                <option value="shopping">🛍️ Shopping</option>
+                                <option value="bills">💡 Bills & Utilities</option>
+                                <option value="health">🏥 Health & Medical</option>
+                                <option value="education">📚 Education</option>
+                                <option value="other">📦 Other</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="expenseDate">Date</label>
+                            <input type="date" id="expenseDate" required>
+                        </div>
+                    </div>
+                    <div class="form-footer">
+                        <button type="submit" class="btn btn-primary">Add expense</button>
+                        <span class="hint">Shortcut: <kbd>Alt</kbd> + <kbd>N</kbd></span>
+                    </div>
+                </form>
             </div>
         </section>
 
-        <!-- Add Expense Section -->
-        <section id="expenses" class="add-expense">
-            <div class="container">
-                <div class="card">
-                    <h2>Add New Expense</h2>
-                    <form id="expenseForm">
-                        <div class="form-row">
-                            <div class="input-group">
-                                <label for="expenseTitle">Expense Title</label>
-                                <input type="text" id="expenseTitle" placeholder="e.g., Lunch, Groceries" maxlength="100" required>
-                            </div>
-                            <div class="input-group">
-                                <label for="expenseAmount">Amount (₹)</label>
-                                <input type="text" inputmode="decimal" id="expenseAmount" placeholder="0" autocomplete="off" required>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="input-group">
-                                <label for="expenseCategory">Category</label>
-                                <select id="expenseCategory" required>
-                                    <option value="">Select Category</option>
-                                    <option value="food">🍽️ Food & Dining</option>
-                                    <option value="transport">🚗 Transportation</option>
-                                    <option value="entertainment">🎬 Entertainment</option>
-                                    <option value="shopping">🛍️ Shopping</option>
-                                    <option value="bills">💡 Bills & Utilities</option>
-                                    <option value="health">🏥 Health & Medical</option>
-                                    <option value="education">📚 Education</option>
-                                    <option value="other">📦 Other</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
-                                <label for="expenseDate">Date</label>
-                                <input type="date" id="expenseDate" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-success">Add Expense</button>
-                    </form>
+        <!-- Expense History -->
+        <section id="history" class="expense-list" aria-labelledby="historyHeading">
+            <div class="section-header">
+                <h2 id="historyHeading">History</h2>
+                <div class="header-buttons">
+                    <button type="button" id="exportButton" class="btn btn-ghost"><i class="fas fa-file-csv" aria-hidden="true"></i> Export CSV</button>
+                    <button type="button" id="clearAllButton" class="btn btn-ghost btn-ghost-danger">Delete all</button>
                 </div>
             </div>
-        </section>
-
-        <!-- Expenses List -->
-        <section id="history" class="expense-list">
-            <div class="container">
-                <div class="card">
-                    <div class="section-header">
-                        <h2>Recent Expenses</h2>
-                        <div class="header-buttons">
-                            <button onclick="exportExpenses()" class="btn btn-primary"><i class="fas fa-file-csv"></i> Export CSV</button>
-                            <button onclick="clearAllFilters()" class="btn btn-secondary">Clear Filters</button>
-                            <button onclick="clearAllExpenses()" class="btn btn-danger">Clear All</button>
-                        </div>
-                    </div>
-                    <div class="filter-section">
-                        <input type="search" id="searchInput" placeholder="🔍 Search expenses..." aria-label="Search expenses" oninput="searchExpenses()">
-                        <select id="categoryFilter" aria-label="Filter by category" onchange="filterExpenses()">
-                            <option value="">All Categories</option>
-                            <option value="food">🍽️ Food & Dining</option>
-                            <option value="transport">🚗 Transportation</option>
-                            <option value="entertainment">🎬 Entertainment</option>
-                            <option value="shopping">🛍️ Shopping</option>
-                            <option value="bills">💡 Bills & Utilities</option>
-                            <option value="health">🏥 Health & Medical</option>
-                            <option value="education">📚 Education</option>
-                            <option value="other">📦 Other</option>
-                        </select>
-                        <select id="sortFilter" aria-label="Sort expenses" onchange="sortExpenses()">
-                            <option value="">Sort By</option>
-                            <option value="date-newest">📅 Date & Time (Newest First)</option>
-                            <option value="date-oldest">📅 Date & Time (Oldest First)</option>
-                            <option value="amount-highest">💰 Amount (Highest First)</option>
-                            <option value="amount-lowest">💰 Amount (Lowest First)</option>
-                            <option value="category">📂 Category (A-Z)</option>
-                            <option value="title">📝 Title (A-Z)</option>
-                        </select>
-                    </div>
-                    <div id="expensesList" class="expenses-container" aria-live="polite">
-                        <p class="no-expenses">No expenses added yet. Start tracking your spending!</p>
-                    </div>
-                </div>
+            <div class="filter-section">
+                <input type="search" id="searchInput" placeholder="Search title, category or amount" aria-label="Search expenses">
+                <select id="categoryFilter" aria-label="Filter by category">
+                    <option value="">All categories</option>
+                    <option value="food">🍽️ Food & Dining</option>
+                    <option value="transport">🚗 Transportation</option>
+                    <option value="entertainment">🎬 Entertainment</option>
+                    <option value="shopping">🛍️ Shopping</option>
+                    <option value="bills">💡 Bills & Utilities</option>
+                    <option value="health">🏥 Health & Medical</option>
+                    <option value="education">📚 Education</option>
+                    <option value="other">📦 Other</option>
+                </select>
+                <select id="sortFilter" aria-label="Sort expenses">
+                    <option value="">Newest added first</option>
+                    <option value="date-newest">Date (newest first)</option>
+                    <option value="date-oldest">Date (oldest first)</option>
+                    <option value="amount-highest">Amount (highest first)</option>
+                    <option value="amount-lowest">Amount (lowest first)</option>
+                    <option value="category">Category (A–Z)</option>
+                    <option value="title">Title (A–Z)</option>
+                </select>
+                <button type="button" id="clearFiltersButton" class="btn btn-ghost" hidden>Clear filters</button>
             </div>
+            <p id="resultSummary" class="result-summary" aria-live="polite"></p>
+            <ul id="expensesList" class="expenses-container"></ul>
         </section>
     </main>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>ExpenseTracker</h3>
-                    <p>Your data stays in this browser (localStorage). Nothing is sent to a server.</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#expenses">Add Expenses</a></li>
-                        <li><a href="#history">Expense History</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Source</h4>
-                    <p><i class="fab fa-github"></i> <a href="https://github.com/devKiNGCRiC" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none;">devKiNGCRiC</a></p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 devKiNGCRiC. Made with ❤️ in India</p>
-            </div>
+        <div class="container footer-content">
+            <p>Your data stays in this browser (localStorage). Nothing is sent to a server.</p>
+            <p>
+                <a href="https://github.com/devKiNGCRiC/expense-tracker" target="_blank" rel="noopener noreferrer"><i class="fab fa-github" aria-hidden="true"></i> Source on GitHub</a>
+            </p>
+            <p>&copy; 2025 devKiNGCRiC. Made with ❤️ in India</p>
         </div>
     </footer>
+
+    <div id="toasts" class="toasts" aria-live="polite"></div>
 
     <script src="script.js"></script>
 </body>
