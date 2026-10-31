@@ -4,12 +4,18 @@ A responsive web app for tracking personal expenses against a monthly budget. Bu
 
 🌐 **Live Demo**: [View Live Site](https://devKiNGCRiC.github.io/expense-tracker)
 
+<p align="center">
+  <img src="screenshots/desktop.jpg" alt="Expense Tracker on desktop: money left this month, vibe check, add form, category breakdown and history" width="72%">
+  &nbsp;
+  <img src="screenshots/mobile.jpg" alt="Expense Tracker on a phone: money left this month and the vibe check card" width="22%">
+</p>
+
 ## ✨ Features
 
 ### 💸 Expense Management
 - **Add Expenses**: Record daily expenses with title, amount, a one-tap category chip, and date
 - **Monthly Budget**: See how much is left this month; past months don't count against it. Edit it right in the overview
-- **Pace Meter**: Compares budget used with how far through the month you are, and suggests a daily allowance
+- **Pace Meter**: Compares budget used with how far through the month you are
 - **Vibe Check**: A card that reacts to your pace (😎 on track, 👀 spending fast, 💀 over budget) with a daily allowance
 - **History**: Expenses in date order, grouped by month with a subtotal for each and a running balance against the budget
 - **Category Breakdown**: This month's spending per category, with one strip showing how much of the budget each category took
@@ -41,7 +47,6 @@ Liquid glass: frosted panels with light-catching rims float over slowly drifting
 
 ### 🧭 UI/UX
 - **Responsive Design**: Works on desktop, tablet, and mobile
-- **Category Icons**: A drawn line icon and a colour for each category, used in the form, the breakdown and the history
 - **Clear Feedback**: Short notifications, highlighted invalid fields, and distinct empty states
 - **Accessible**: Keyboard-friendly controls, screen-reader labels and reduced-motion support
 
@@ -55,7 +60,7 @@ This project demonstrates several important DSA concepts:
 ### 📊 Data Structures Used
 - **Arrays**: Dynamic storage of expense records
 - **Objects/Hash Maps**: Efficient expense data structuring
-- **Associative Arrays**: Category-to-icon mapping
+- **Associative Arrays**: Category-to-name mapping
 
 ### 🔍 Algorithms Implemented
 
@@ -100,7 +105,7 @@ expensesArray.sort((a, b) => {
 ## 🚀 Technologies Used
 
 - **HTML5**: Semantic structure with labelled form controls
-- **CSS3**: Modern styling with Flexbox and animations
+- **CSS3**: Grid and Flexbox layout, `backdrop-filter` glass, and animations
 - **Vanilla JavaScript**: Pure JS implementation (no frameworks)
 - **LocalStorage API**: Client-side data persistence
 - **Responsive Design**: Media queries for tablet and phone widths
@@ -112,6 +117,7 @@ expense-tracker/
 ├── index.html          # Main HTML structure
 ├── style.css           # Responsive CSS styling
 ├── script.js           # JavaScript logic & DSA implementations
+├── screenshots/        # App screenshots used in this README
 ├── LICENSE             # MIT License
 └── README.md           # Project documentation
 ```
