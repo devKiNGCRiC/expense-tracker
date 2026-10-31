@@ -309,7 +309,8 @@ expenseForm.addEventListener('submit', function(e) {
 
     const title = $('expenseTitle').value.trim();
     const amount = Math.round(parseFloat($('expenseAmount').value) * 100) / 100;
-    const category = $('expenseCategory').value;
+    const checkedCategory = expenseForm.querySelector('input[name="expenseCategory"]:checked');
+    const category = checkedCategory ? checkedCategory.value : '';
     const date = $('expenseDate').value;
 
     // Validation: mark every invalid field, focus the first one
@@ -317,7 +318,9 @@ expenseForm.addEventListener('submit', function(e) {
     const errors = validateExpenseInput(title, amount, category, date);
     if (errors.length > 0) {
         errors.forEach(error => $(error.field).setAttribute('aria-invalid', 'true'));
-        $(errors[0].field).focus();
+        // The category "field" is a chip group; focus its first radio instead
+        const firstInvalid = $(errors[0].field);
+        (firstInvalid.matches('input, select') ? firstInvalid : firstInvalid.querySelector('input')).focus();
         showToast(errors[0].message, 'error');
         return;
     }
@@ -772,8 +775,15 @@ $('expenseAmount').addEventListener('input', sanitizeAmountInput);
 budgetInput.addEventListener('input', sanitizeAmountInput);
 
 // Clear the error state as soon as a field is corrected
-expenseForm.addEventListener('input', e => e.target.removeAttribute('aria-invalid'));
-expenseForm.addEventListener('change', e => e.target.removeAttribute('aria-invalid'));
+// (closest() also covers the chip group, where the radio is inside the invalid element)
+const clearInvalid = e => {
+    const invalid = e.target.closest('[aria-invalid]');
+    if (invalid) {
+        invalid.removeAttribute('aria-invalid');
+    }
+};
+expenseForm.addEventListener('input', clearInvalid);
+expenseForm.addEventListener('change', clearInvalid);
 
 // Alt+N jumps to the add form
 // (Ctrl+N opens a new browser window and can't be overridden in most browsers)

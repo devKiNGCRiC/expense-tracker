@@ -113,21 +113,20 @@
                                 <label for="expenseTitle">Paid for</label>
                                 <input type="text" id="expenseTitle" placeholder="Lunch, metro card, rent…" maxlength="100" autocomplete="off" required>
                             </div>
-                            <div class="input-group">
-                                <label for="expenseCategory">Category</label>
-                                <select id="expenseCategory" required>
-                                    <option value="">Choose…</option>
-                                    <option value="food">🍽️ Food & Dining</option>
-                                    <option value="transport">🚗 Transportation</option>
-                                    <option value="entertainment">🎬 Entertainment</option>
-                                    <option value="shopping">🛍️ Shopping</option>
-                                    <option value="bills">💡 Bills & Utilities</option>
-                                    <option value="health">🏥 Health & Medical</option>
-                                    <option value="education">📚 Education</option>
-                                    <option value="other">📦 Other</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
+                            <fieldset class="input-group field-category">
+                                <legend>Category</legend>
+                                <div class="chips" id="expenseCategory">
+                                    <label class="chip"><input type="radio" name="expenseCategory" value="food"><span>🍽️ Food</span></label>
+                                    <label class="chip"><input type="radio" name="expenseCategory" value="transport"><span>🚗 Transport</span></label>
+                                    <label class="chip"><input type="radio" name="expenseCategory" value="shopping"><span>🛍️ Shopping</span></label>
+                                    <label class="chip"><input type="radio" name="expenseCategory" value="bills"><span>💡 Bills</span></label>
+                                    <label class="chip"><input type="radio" name="expenseCategory" value="entertainment"><span>🎬 Entertainment</span></label>
+                                    <label class="chip"><input type="radio" name="expenseCategory" value="health"><span>🏥 Health</span></label>
+                                    <label class="chip"><input type="radio" name="expenseCategory" value="education"><span>📚 Education</span></label>
+                                    <label class="chip"><input type="radio" name="expenseCategory" value="other"><span>📦 Other</span></label>
+                                </div>
+                            </fieldset>
+                            <div class="input-group field-date">
                                 <label for="expenseDate">Date</label>
                                 <input type="date" id="expenseDate" required>
                             </div>

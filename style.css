@@ -552,7 +552,8 @@ kbd {
 }
 
 .slip-amount label,
-.input-group label {
+.input-group label,
+.input-group legend {
     display: block;
     font-size: 0.875rem;
     font-stretch: 80%;
@@ -599,21 +600,87 @@ kbd {
 
 .slip-fields {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px 20px;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    grid-template-areas:
+        "title date"
+        "category category";
+    gap: 20px 20px;
     margin-bottom: 26px;
 }
 
 .field-title {
-    grid-column: 1 / -1;
+    grid-area: title;
+}
+
+.field-date {
+    grid-area: date;
+}
+
+.field-category {
+    grid-area: category;
+    border: none;
 }
 
 .input-group {
     min-width: 0;
 }
 
+/* Category chips: real radios (keyboard + screen reader friendly), styled as tokens */
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 2px;
+    border-radius: 8px;
+}
+
+.chips[aria-invalid="true"] {
+    box-shadow: 0 0 0 2px var(--vermilion);
+}
+
+.chip {
+    position: relative;
+    cursor: pointer;
+}
+
+.chip input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.chip span {
+    display: inline-block;
+    padding: 6px 12px;
+    border: 1.5px solid rgba(43, 33, 80, 0.35);
+    border-radius: 999px;
+    background: #fff;
+    font-size: 0.975rem;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.chip:hover span {
+    border-color: var(--ink);
+}
+
+.chip input:checked + span {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 0 var(--marigold);
+}
+
+.chip input:focus-visible + span {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+}
+
 /* Underline fields, like writing on a printed form */
-.slip-fields input,
+.slip-fields input:not([type="radio"]),
 .slip-fields select {
     width: 100%;
     font: inherit;
@@ -626,7 +693,7 @@ kbd {
     background: transparent;
 }
 
-.slip-fields input:focus,
+.slip-fields input:not([type="radio"]):focus,
 .slip-fields select:focus {
     outline: none;
     border-bottom-color: var(--marigold-deep);
@@ -637,7 +704,7 @@ kbd {
     color: #9690B3;
 }
 
-.slip-fields [aria-invalid="true"] {
+.slip-fields input[aria-invalid="true"] {
     border-bottom-color: var(--vermilion);
     background: rgba(210, 64, 42, 0.06);
 }
@@ -1099,7 +1166,11 @@ kbd {
     }
 
     .slip-fields {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "title"
+            "category"
+            "date";
     }
 
     .hint {
