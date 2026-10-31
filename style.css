@@ -443,62 +443,104 @@ kbd {
     }
 }
 
-/* Under the note: pace + budget */
-.note-under {
+/* Budget: shown as the note's denomination, edited in place */
+.denom-display {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 16px 32px;
-    margin-top: 26px;
-    padding: 0 6px;
+    gap: 6px;
 }
 
-.pace-message {
-    flex: 1 1 360px;
-    max-width: 58ch;
-    font-size: 1.125rem;
-    color: var(--desk-text);
+.denom-display[hidden],
+.budget-form[hidden] {
+    display: none;
+}
+
+.denom-edit {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.denom-edit:hover {
+    border-color: var(--ink-faint);
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--ink);
 }
 
 .budget-form {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 8px 12px;
-}
-
-.budget-form label {
-    color: var(--desk-muted);
-    font-stretch: 85%;
-}
-
-.budget-form-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    gap: 6px;
+    margin-top: 4px;
 }
 
 .input-prefix {
-    color: var(--desk-muted);
+    font-family: var(--font-display);
+    font-size: 1.3rem;
 }
 
 .budget-form input {
-    width: 130px;
+    width: 120px;
     font: inherit;
-    padding: 9px 12px;
-    color: var(--desk-text);
-    background: var(--desk-deep);
-    border: 1px solid var(--desk-rule);
+    font-size: 1.05rem;
+    padding: 5px 10px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.85);
+    border: 1.5px solid var(--ink);
     border-radius: 6px;
 }
 
-.budget-form input:focus {
-    border-color: var(--marigold);
+.budget-form input[aria-invalid="true"] {
+    border-color: var(--vermilion);
 }
 
-.budget-form input::placeholder {
-    color: #6E6794;
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.95rem;
+}
+
+/* Under the note: pace remark with a status dot */
+.pace-message {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    max-width: 64ch;
+    margin-top: 26px;
+    padding: 0 6px;
+    font-size: 1.125rem;
+    color: var(--desk-text);
+}
+
+.pace-message::before {
+    content: '';
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--desk-muted);
+    transform: translateY(-1px);
+}
+
+.pace-message[data-state="ok"]::before {
+    background: #3FC28F;
+    box-shadow: 0 0 0 4px rgba(63, 194, 143, 0.18);
+}
+
+.pace-message[data-state="ahead"]::before {
+    background: var(--marigold);
+    box-shadow: 0 0 0 4px rgba(240, 168, 28, 0.2);
+}
+
+.pace-message[data-state="over"]::before {
+    background: #FF6B55;
+    box-shadow: 0 0 0 4px rgba(255, 107, 85, 0.2);
 }
 
 /* ---------- Slip + breakdown ---------- */
@@ -865,6 +907,16 @@ kbd {
 
 .expense-item:nth-child(even) {
     background: var(--paper-tint);
+}
+
+.expense-item.is-new {
+    animation: fresh-ink 1.6s ease-out;
+}
+
+@keyframes fresh-ink {
+    from {
+        background: rgba(240, 168, 28, 0.45);
+    }
 }
 
 .expense-item > * {

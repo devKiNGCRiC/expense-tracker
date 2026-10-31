@@ -1,6 +1,8 @@
 // Global variables to store application data
 let budget = 0;      // monthly budget
 let expenses = [];   // all expenses, newest added first
+let editingBudget = false;  // budget form open on the note
+let highlightId = null;     // passbook row to flash after the next render
 
 // Category metadata (used by the list, breakdown, search and CSV export)
 const CATEGORIES = {
@@ -187,15 +189,15 @@ function renderOverview() {
     overview.classList.toggle('is-over', budget > 0 && remaining < 0);
 
     if (budget === 0) {
-        $('remainingBudget').textContent = formatCurrency(spent);
+        animateAmount($('remainingBudget'), spent);
         $('remainingCaption').textContent = 'spent';
         $('spentSummary').textContent = 'No monthly budget set';
     } else if (remaining < 0) {
-        $('remainingBudget').textContent = formatCurrency(-remaining);
+        animateAmount($('remainingBudget'), -remaining);
         $('remainingCaption').textContent = 'over budget';
         $('spentSummary').textContent = `Spent ${formatCurrency(spent)} of ${formatCurrency(budget)}`;
     } else {
-        $('remainingBudget').textContent = formatCurrency(remaining);
+        animateAmount($('remainingBudget'), remaining);
         $('remainingCaption').textContent = 'left';
         $('spentSummary').textContent = `Spent ${formatCurrency(spent)} of ${formatCurrency(budget)}`;
     }
@@ -216,9 +218,13 @@ function renderOverview() {
     $('meterTodayLabel').textContent = `Day ${day} of ${daysInMonth}`;
 
     $('paceMessage').textContent = getPaceMessage(spent, remaining, day, daysInMonth, ahead);
+    $('paceMessage').dataset.state = budget === 0 ? 'unset' : remaining < 0 ? 'over' : ahead ? 'ahead' : 'ok';
 
-    // Budget form reflects the current value
-    $('budgetButton').textContent = budget > 0 ? 'Update budget' : 'Set budget';
+    // Budget is edited in place on the note; the form stays open until one is set
+    const showForm = budget === 0 || editingBudget;
+    $('budgetForm').hidden = !showForm;
+    $('budgetDisplay').hidden = showForm;
+    $('budgetButton').textContent = budget > 0 ? 'Save' : 'Set';
     if (document.activeElement !== budgetInput) {
         budgetInput.value = budget > 0 ? String(budget) : '';
     }
@@ -228,7 +234,7 @@ function renderOverview() {
 
 function getPaceMessage(spent, remaining, day, daysInMonth, ahead) {
     if (budget === 0) {
-        return 'Set a monthly budget to see how much you have left.';
+        return 'Set a monthly budget on the note to see how much you have left.';
     }
     if (remaining < 0) {
         return `You've spent ${formatCurrency(-remaining)} more than your budget this month.`;
@@ -285,9 +291,10 @@ function setBudget() {
 
     budgetInput.removeAttribute('aria-invalid');
     budget = budgetValue;
+    editingBudget = false;
     saveToStorage();
-    budgetInput.blur();
     renderOverview();
+    $('editBudgetButton').focus();
     showToast(`Monthly budget set to ${formatCurrency(budget)}.`, 'success');
 }
 
@@ -295,6 +302,49 @@ $('budgetForm').addEventListener('submit', function(e) {
     e.preventDefault();
     setBudget();
 });
+
+$('editBudgetButton').addEventListener('click', function() {
+    editingBudget = true;
+    renderOverview();
+    budgetInput.focus();
+    budgetInput.select();
+});
+
+// Escape cancels editing (only when there's a budget to fall back to)
+budgetInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && budget > 0) {
+        editingBudget = false;
+        budgetInput.removeAttribute('aria-invalid');
+        budgetInput.blur();
+        renderOverview();
+        $('editBudgetButton').focus();
+    }
+});
+
+// Count the note's amount from its previous value to the new one
+function animateAmount(el, to) {
+    const from = el.dataset.value === undefined ? null : Number(el.dataset.value);
+    el.dataset.value = String(to);
+    if (el._frame) {
+        cancelAnimationFrame(el._frame);
+    }
+
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (from === null || from === to || reduceMotion || typeof requestAnimationFrame !== 'function') {
+        el.textContent = formatCurrency(to);
+        return;
+    }
+
+    const duration = 650;
+    const start = performance.now();
+    const step = now => {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        el.textContent = formatCurrency(progress < 1 ? Math.round(from + (to - from) * eased) : to);
+        el._frame = progress < 1 ? requestAnimationFrame(step) : null;
+    };
+    el._frame = requestAnimationFrame(step);
+}
 
 /* ---------- Add / delete ---------- */
 
@@ -337,6 +387,7 @@ expenseForm.addEventListener('submit', function(e) {
     };
 
     expenses.unshift(expense);
+    highlightId = expense.id;
     saveToStorage();
 
     expenseForm.reset();
@@ -409,6 +460,7 @@ function deleteExpense(id) {
         label: 'Undo',
         onClick: () => {
             expenses.splice(Math.min(expenseIndex, expenses.length), 0, deletedExpense);
+            highlightId = deletedExpense.id;
             saveToStorage();
             renderAll();
         }
@@ -496,7 +548,7 @@ function displayExpenses(expensesToShow, filtersOn) {
         : `${expensesToShow.length} ${noun}, ${shownTotal} in total`;
 
     expensesList.innerHTML = expensesToShow.map(expense => `
-        <li class="expense-item">
+        <li class="expense-item${expense.id === highlightId ? ' is-new' : ''}">
             <span class="expense-date">${formatDate(expense.date)}</span>
             <div class="expense-info">
                 <div class="expense-title">${escapeHTML(expense.title)}</div>
@@ -631,6 +683,7 @@ function applySorting(expensesArray, sortType) {
 function renderAll() {
     renderOverview();
     renderHistory();
+    highlightId = null; // only flash on the render right after the change
 }
 
 /* ---------- CSV export ---------- */

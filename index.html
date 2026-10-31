@@ -47,10 +47,21 @@
 
                 <div class="note-frame">
                     <div class="note-top">
-                        <p class="note-denom">
+                        <div class="note-denom">
                             <span class="note-small">Monthly budget</span>
-                            <span id="noteBudget" class="note-denom-value">Not set</span>
-                        </p>
+                            <div id="budgetDisplay" class="denom-display">
+                                <span id="noteBudget" class="note-denom-value">Not set</span>
+                                <button type="button" id="editBudgetButton" class="denom-edit" aria-label="Change monthly budget">
+                                    <i class="fas fa-pen" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <form id="budgetForm" class="budget-form" hidden>
+                                <label for="budgetInput" class="sr-only">Monthly budget in rupees</label>
+                                <span class="input-prefix" aria-hidden="true">₹</span>
+                                <input type="text" inputmode="decimal" id="budgetInput" placeholder="15000" autocomplete="off">
+                                <button type="submit" class="btn btn-ink btn-sm" id="budgetButton">Save</button>
+                            </form>
+                        </div>
                         <p class="note-serial">
                             <span id="monthLabel" class="note-month">This month</span>
                             <span id="noteSerial" class="note-serial-no">No. 0000</span>
@@ -78,18 +89,7 @@
                 <div class="stamp" aria-hidden="true">Over budget</div>
             </div>
 
-            <div class="note-under">
-                <p id="paceMessage" class="pace-message">Set a monthly budget to see how much you have left.</p>
-
-                <form id="budgetForm" class="budget-form">
-                    <label for="budgetInput">Monthly budget</label>
-                    <div class="budget-form-row">
-                        <span class="input-prefix" aria-hidden="true">₹</span>
-                        <input type="text" inputmode="decimal" id="budgetInput" placeholder="15000" autocomplete="off">
-                        <button type="submit" class="btn btn-marigold" id="budgetButton">Set budget</button>
-                    </div>
-                </form>
-            </div>
+            <p id="paceMessage" class="pace-message" data-state="unset">Set a monthly budget on the note to see how much you have left.</p>
         </section>
 
         <div class="split">
