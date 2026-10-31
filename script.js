@@ -1,8 +1,8 @@
 // Global variables to store application data
 let budget = 0;      // monthly budget
 let expenses = [];   // all expenses, newest added first
-let editingBudget = false;  // budget form open on the note
-let highlightId = null;     // passbook row to flash after the next render
+let editingBudget = false;  // budget form open in the overview
+let highlightId = null;     // history row to flash after the next render
 
 // Category metadata (used by the list, breakdown, search and CSV export)
 // Icons are <symbol>s in index.html (#cat-food, ...); colours are .cat-* classes in style.css
@@ -30,76 +30,8 @@ const sortFilter = $('sortFilter');
 document.addEventListener('DOMContentLoaded', function() {
     loadFromStorage();
     resetDateField();
-    drawEngraving();
     renderAll();
 });
-
-/* ---------- Banknote engraving ---------- */
-
-// Guilloche patterns: a spirograph rosette plus wavy bands, like the
-// fine-line engraving printed on currency notes
-function drawEngraving() {
-    const svg = $('noteEngraving');
-    const NS = 'http://www.w3.org/2000/svg';
-
-    const makePath = (d, group) => {
-        const path = document.createElementNS(NS, 'path');
-        path.setAttribute('d', d);
-        path.setAttribute('pathLength', '1'); // lets CSS animate the "drawing" uniformly
-        group.appendChild(path);
-    };
-
-    // Hypotrochoid: a point at distance d from the centre of a circle (radius r)
-    // rolling inside a fixed circle (radius R)
-    const hypotrochoid = (cx, cy, R, r, d, rotation) => {
-        const turns = r / gcd(R, r);
-        const steps = 900 * turns;
-        let path = '';
-        for (let i = 0; i <= steps; i++) {
-            const t = (i / steps) * Math.PI * 2 * turns;
-            const x = (R - r) * Math.cos(t) + d * Math.cos(((R - r) / r) * t);
-            const y = (R - r) * Math.sin(t) - d * Math.sin(((R - r) / r) * t);
-            const rx = x * Math.cos(rotation) - y * Math.sin(rotation);
-            const ry = x * Math.sin(rotation) + y * Math.cos(rotation);
-            path += `${i === 0 ? 'M' : 'L'}${(cx + rx).toFixed(1)},${(cy + ry).toFixed(1)}`;
-        }
-        return path;
-    };
-
-    const rosette = document.createElementNS(NS, 'g');
-    rosette.setAttribute('class', 'rosette');
-    [[150, 42, 70, 0], [150, 42, 52, 0.12], [120, 35, 60, 0.3], [96, 24, 40, 0.5]].forEach(([R, r, d, rot]) => {
-        makePath(hypotrochoid(800, 215, R, r, d, rot), rosette);
-    });
-
-    // Bands: sets of phase-shifted sine waves along the top and bottom edges
-    const bands = document.createElementNS(NS, 'g');
-    bands.setAttribute('class', 'band');
-    [[46, 14, 0.018], [400, 12, 0.022]].forEach(([baseY, amplitude, frequency]) => {
-        for (let k = 0; k < 9; k++) {
-            let path = '';
-            for (let x = 0; x <= 1000; x += 6) {
-                const y = baseY + amplitude * Math.sin(x * frequency + k * 0.55) + (k - 4) * 2.2;
-                path += `${x === 0 ? 'M' : 'L'}${x},${y.toFixed(1)}`;
-            }
-            makePath(path, bands);
-        }
-    });
-
-    // ₹ medallion in the empty centre of the rosette
-    const medallion = document.createElementNS(NS, 'text');
-    medallion.setAttribute('x', '800');
-    medallion.setAttribute('y', '215');
-    medallion.setAttribute('class', 'medallion');
-    medallion.textContent = '₹';
-
-    svg.replaceChildren(bands, rosette, medallion);
-    svg.classList.add('is-drawing');
-}
-
-function gcd(a, b) {
-    return b === 0 ? a : gcd(b, a % b);
-}
 
 /* ---------- Dates & formatting ---------- */
 
@@ -153,6 +85,19 @@ function getCategoryIcon(category) {
     return `<svg class="cat-icon" aria-hidden="true"><use href="#cat-${getCategoryKey(category)}"/></svg>`;
 }
 
+// Icon on a round blob in the category's colour
+function getCategoryBadge(category) {
+    return `<span class="cat-blob cat-${getCategoryKey(category)}">${getCategoryIcon(category)}</span>`;
+}
+
+// Emoji and headline for the vibe check card, per pace state
+const VIBES = {
+    unset: { emoji: '✨', title: 'No budget yet' },
+    ok: { emoji: '😎', title: 'On track, no stress' },
+    ahead: { emoji: '👀', title: 'Spending kinda fast' },
+    over: { emoji: '💀', title: 'Over budget' }
+};
+
 function getCategoryName(category) {
     return (CATEGORIES[category] || CATEGORIES.other).name;
 }
@@ -187,8 +132,8 @@ function renderOverview() {
 
     $('monthLabel').textContent = now.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
     $('noteBudget').textContent = budget > 0 ? formatCurrency(budget) : 'Not set';
-    // Serial number: how many expenses have been logged this month
-    $('noteSerial').textContent = `No. ${String(getMonthExpenses().length).padStart(4, '0')}`;
+    const monthCount = getMonthExpenses().length;
+    $('noteSerial').textContent = `${monthCount} ${monthCount === 1 ? 'spend' : 'spends'} logged this month`;
 
     overview.classList.toggle('is-unset', budget === 0);
     overview.classList.toggle('is-over', budget > 0 && remaining < 0);
@@ -215,17 +160,21 @@ function renderOverview() {
     meter.setAttribute('aria-valuetext', budget > 0
         ? `${Math.round(usedShare * 100)}% of budget used, day ${day} of ${daysInMonth}`
         : 'No budget set');
-    // Clip a full-width gradient so the colour shift reflects position along the thread
-    $('meterFill').style.clipPath = `inset(0 ${100 - Math.min(usedShare, 1) * 100}% 0 0)`;
+    // Clip a full-width fill so its stripes stay put as it grows
+    $('meterFill').style.clipPath = `inset(0 ${100 - Math.min(usedShare, 1) * 100}% 0 0 round 999px)`;
     $('meterToday').style.left = `${monthShare * 100}%`;
     $('meterToday').classList.toggle('at-start', monthShare < 0.15);
     $('meterToday').classList.toggle('at-end', monthShare > 0.85);
     $('meterTodayLabel').textContent = `Day ${day} of ${daysInMonth}`;
 
     $('paceMessage').textContent = getPaceMessage(spent, remaining, day, daysInMonth, ahead);
-    $('paceMessage').dataset.state = budget === 0 ? 'unset' : remaining < 0 ? 'over' : ahead ? 'ahead' : 'ok';
+    const state = budget === 0 ? 'unset' : remaining < 0 ? 'over' : ahead ? 'ahead' : 'ok';
+    $('paceMessage').dataset.state = state;
+    overview.dataset.vibe = state;
+    $('vibeEmoji').textContent = VIBES[state].emoji;
+    $('vibeTitle').textContent = VIBES[state].title;
 
-    // Budget is edited in place on the note; the form stays open until one is set
+    // Budget is edited in place; the form stays open until one is set
     const showForm = budget === 0 || editingBudget;
     $('budgetForm').hidden = !showForm;
     $('budgetDisplay').hidden = showForm;
@@ -239,20 +188,20 @@ function renderOverview() {
 
 function getPaceMessage(spent, remaining, day, daysInMonth, ahead) {
     if (budget === 0) {
-        return 'Set a monthly budget on the note to see how much you have left.';
+        return 'Set a monthly budget to see how much you have left.';
     }
     if (remaining < 0) {
         return `You've spent ${formatCurrency(-remaining)} more than your budget this month.`;
     }
     if (ahead) {
         const projected = (spent / day) * daysInMonth;
-        return `Spending ahead of pace. At this rate you'll spend ${formatCurrency(Math.round(projected))} by the end of the month.`;
+        return `At this rate you'll spend ${formatCurrency(Math.round(projected))} by the end of the month.`;
     }
     const daysLeft = daysInMonth - day + 1; // include today
     if (daysLeft === 1) {
-        return `On track. Last day of the month, with ${formatCurrency(remaining)} left to spend.`;
+        return `Last day of the month, with ${formatCurrency(remaining)} left to spend.`;
     }
-    return `On track. You can spend about ${formatCurrency(Math.floor(remaining / daysLeft))} a day for the rest of the month.`;
+    return `You can spend about ${formatCurrency(Math.floor(remaining / daysLeft))} a day for the rest of the month.`;
 }
 
 // This month's spending per category, largest first
@@ -285,12 +234,12 @@ function renderBreakdown() {
 
     list.innerHTML = rows.map(([category, amount]) => `
         <li class="breakdown-row cat-${getCategoryKey(category)}">
-            <span class="breakdown-name">${getCategoryIcon(category)} ${getCategoryName(category)}</span>
+            <span class="breakdown-name">${getCategoryBadge(category)} ${getCategoryName(category)}</span>
             <span class="breakdown-amount">
                 <span class="breakdown-share">${Math.round((amount / total) * 100)}%</span>
                 ${formatCurrency(amount)}
             </span>
-            <span class="breakdown-bar" style="clip-path: inset(0 ${100 - (amount / largest) * 100}% 0 0 round 3px)" aria-hidden="true"></span>
+            <span class="breakdown-bar" style="clip-path: inset(0 ${100 - (amount / largest) * 100}% 0 0 round 999px)" aria-hidden="true"></span>
         </li>
     `).join('');
 }
@@ -338,7 +287,7 @@ budgetInput.addEventListener('keydown', function(e) {
     }
 });
 
-// Count the note's amount from its previous value to the new one
+// Count the big amount from its previous value to the new one
 function animateAmount(el, to) {
     const from = el.dataset.value === undefined ? null : Number(el.dataset.value);
     el.dataset.value = String(to);
@@ -527,7 +476,7 @@ function renderHistory() {
     }
 
     // Apply sorting
-    // Apply sorting (default: date, newest first - the natural passbook order)
+    // Apply sorting (default: date, newest first)
     applySorting(filteredExpenses, sortType || 'date-newest');
 
     const filtersOn = hasActiveFilters();
@@ -563,7 +512,7 @@ function displayExpenses(expensesToShow, filtersOn, sortType) {
         ? `${expensesToShow.length} of ${expenses.length} expenses shown, totalling ${shownTotal}`
         : `${expensesToShow.length} ${noun}, ${shownTotal} in total`;
 
-    // In date order, break the passbook into months with a subtotal for each
+    // In date order, break the history into months with a subtotal for each
     const groupByMonth = sortType === 'date-newest' || sortType === 'date-oldest';
     const monthTotals = {};
     if (groupByMonth) {
@@ -574,13 +523,13 @@ function displayExpenses(expensesToShow, filtersOn, sortType) {
     }
     let currentMonth = null;
 
-    // Running balance per month, like a passbook: budget minus withdrawals so far
+    // Running balance per month, like a passbook: budget minus spending so far
     const showBalance = budget > 0;
     const balances = showBalance ? getRunningBalances() : null;
     $('history').classList.toggle('has-balance', showBalance);
     const balanceCell = value => {
-        const text = value < 0 ? `−${formatCurrency(-value)}` : formatCurrency(value);
-        return `<span class="expense-balance${value < 0 ? ' is-negative' : ''}"><span class="balance-label">Balance </span>${text}</span>`;
+        const text = value < 0 ? `${formatCurrency(-value)} over` : `${formatCurrency(value)} left`;
+        return `<span class="expense-balance${value < 0 ? ' is-negative' : ''}">${text}</span>`;
     };
 
     expensesList.innerHTML = expensesToShow.map(expense => {
@@ -592,19 +541,24 @@ function displayExpenses(expensesToShow, filtersOn, sortType) {
             monthHeader = `
         <li class="ledger-month">
             <span>${monthName}</span>
-            <span>${formatCurrency(monthTotals[monthKey])}</span>
+            <span>${formatCurrency(monthTotals[monthKey])} spent</span>
             ${showBalance ? balanceCell(budget - sumAmounts(expenses.filter(e => e.date.startsWith(monthKey)))) : ''}
         </li>`;
         }
         return monthHeader + `
         <li class="expense-item${expense.id === highlightId ? ' is-new' : ''}">
-            <span class="expense-date">${formatDate(expense.date)}</span>
+            ${getCategoryBadge(expense.category)}
             <div class="expense-info">
                 <div class="expense-title">${escapeHTML(expense.title)}</div>
-                <div class="expense-category cat-${getCategoryKey(expense.category)}">${getCategoryIcon(expense.category)} ${getCategoryName(expense.category)}</div>
+                <div class="expense-meta">
+                    <span class="expense-category">${getCategoryName(expense.category)}</span>
+                    <span class="expense-date">${formatDate(expense.date)}</span>
+                </div>
             </div>
-            <span class="expense-amount">${formatCurrency(expense.amount)}</span>
-            ${showBalance ? balanceCell(balances.get(expense.id)) : ''}
+            <div class="expense-money">
+                <span class="expense-amount">−${formatCurrency(expense.amount)}</span>
+                ${showBalance ? balanceCell(balances.get(expense.id)) : ''}
+            </div>
             <span class="expense-action">
                 <button type="button" class="delete-btn" data-id="${expense.id}" aria-label="Delete ${escapeHTML(expense.title)}">
                     <i class="fas fa-trash" aria-hidden="true"></i>

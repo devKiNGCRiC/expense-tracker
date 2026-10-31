@@ -8,9 +8,10 @@ A responsive web app for tracking personal expenses against a monthly budget. Bu
 
 ### 💸 Expense Management
 - **Add Expenses**: Record daily expenses with title, amount, a one-tap category chip, and date
-- **Monthly Budget**: See how much is left this month; past months don't count against it. Edit it right on the note
+- **Monthly Budget**: See how much is left this month; past months don't count against it. Edit it right in the overview
 - **Pace Meter**: Compares budget used with how far through the month you are, and suggests a daily allowance
-- **Passbook**: Expense history in date order, grouped by month with a subtotal for each and a running balance against the budget
+- **Vibe Check**: A card that reacts to your pace (😎 on track, 👀 spending fast, 💀 over budget) with a daily allowance
+- **History**: Expenses in date order, grouped by month with a subtotal for each and a running balance against the budget
 - **Category Breakdown**: This month's spending per category, with one strip showing how much of the budget each category took
 - **Budget Alerts**: A notice when spending crosses 50%, 80% and 100% of the budget
 - **Undo Delete**: Deleted expenses can be restored from the notification
@@ -32,16 +33,15 @@ A responsive web app for tracking personal expenses against a monthly budget. Bu
   - 📝 Title (A-Z)
 
 ### 🎨 Design
-The month is shown as a banknote lying on an indigo desk:
-- **The note**: what's left this month in large type, with fine-line guilloche engraving generated in JavaScript and a red serial number counting this month's expenses
-- **Security thread**: the budget meter, a windowed colour-shifting strip with a marker for today
-- **Over-budget stamp**: an ink-textured rubber stamp appears when you overspend
-- **Withdrawal slip and passbook**: the add form and the expense history, styled after Indian bank paperwork
-- **Type**: [Rozha One](https://fonts.google.com/specimen/Rozha+One) for figures and headings, [Anek Latin](https://fonts.google.com/specimen/Anek+Latin) for the interface
+A sticker board: chunky ink outlines, hard offset shadows and candy colours on a lilac dot grid.
+- **Money left**: a big butter-yellow sticker with what's left this month and a striped meter with a pin for today
+- **Vibe check**: changes colour and emoji with your spending pace
+- **Category colours**: each category has its own colour and line icon, shared by the chips, the breakdown and the history
+- **Type**: [Modak](https://fonts.google.com/specimen/Modak) for headings, [Baloo 2](https://fonts.google.com/specimen/Baloo+2) for amounts and the interface
 
 ### 🧭 UI/UX
 - **Responsive Design**: Works on desktop, tablet, and mobile
-- **Category Icons**: A drawn line icon and a colour for each category, used in the form, the breakdown and the passbook
+- **Category Icons**: A drawn line icon and a colour for each category, used in the form, the breakdown and the history
 - **Clear Feedback**: Short notifications, highlighted invalid fields, and distinct empty states
 - **Accessible**: Keyboard-friendly controls, screen-reader labels and reduced-motion support
 

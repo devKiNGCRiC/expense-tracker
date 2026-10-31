@@ -4,25 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Track daily expenses against a monthly budget in rupees. Data stays in your browser.">
-    <meta name="theme-color" content="#1F1A3A">
+    <meta name="theme-color" content="#EFE7FF">
     <title>Expense Tracker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wdth,wght@75..125,300..700&family=Rozha+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&family=Modak&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <a class="skip-link" href="#add">Skip to add expense</a>
-
-    <!-- Ink texture for the over-budget stamp -->
-    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
-        <filter id="stampInk">
-            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="noise"/>
-            <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.25" result="speckle"/>
-            <feComposite in="SourceGraphic" in2="speckle" operator="in"/>
-        </filter>
-    </svg>
 
     <!-- Category icons, drawn as one line-art set -->
     <svg width="0" height="0" style="position: absolute" aria-hidden="true">
@@ -41,116 +32,111 @@
         <nav class="nav-container" aria-label="Main">
             <a href="#overview" class="nav-logo">
                 <span class="logo-mark" aria-hidden="true">₹</span>
-                <span class="logo-text">Expense Tracker</span>
+                <span class="logo-text">expense tracker</span>
             </a>
             <ul class="nav-menu">
                 <li><a href="#overview" class="nav-link">Overview</a></li>
                 <li><a href="#add" class="nav-link">Add</a></li>
-                <li><a href="#history" class="nav-link">Passbook</a></li>
+                <li><a href="#history" class="nav-link">History</a></li>
             </ul>
         </nav>
     </header>
 
     <main class="main-content container">
-        <!-- Overview: this month as a banknote -->
-        <section id="overview" class="overview" aria-labelledby="monthLabel">
-            <div class="note" id="note">
-                <svg class="note-engraving" id="noteEngraving" viewBox="0 0 1000 440" preserveAspectRatio="xMaxYMid slice" aria-hidden="true"></svg>
-
-                <div class="note-frame">
-                    <div class="note-top">
-                        <div class="note-denom">
-                            <span class="note-small">Monthly budget</span>
-                            <div id="budgetDisplay" class="denom-display">
-                                <span id="noteBudget" class="note-denom-value">Not set</span>
-                                <button type="button" id="editBudgetButton" class="denom-edit" aria-label="Change monthly budget">
-                                    <i class="fas fa-pen" aria-hidden="true"></i>
-                                </button>
-                            </div>
-                            <form id="budgetForm" class="budget-form" hidden>
-                                <label for="budgetInput" class="sr-only">Monthly budget in rupees</label>
+        <!-- Overview: money left + vibe check -->
+        <section id="overview" class="overview" aria-labelledby="monthLabel" data-vibe="unset">
+            <div class="hero sticker">
+                <div class="hero-top">
+                    <h1 id="monthLabel" class="hero-month">This month</h1>
+                    <div class="hero-budget">
+                        <div id="budgetDisplay" class="budget-display">
+                            <span class="budget-label">Budget</span>
+                            <span id="noteBudget" class="budget-value">Not set</span>
+                            <button type="button" id="editBudgetButton" class="icon-btn" aria-label="Change monthly budget">
+                                <i class="fas fa-pen" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <form id="budgetForm" class="budget-form" hidden>
+                            <label for="budgetInput" class="budget-label">Monthly budget</label>
+                            <span class="budget-field">
                                 <span class="input-prefix" aria-hidden="true">₹</span>
                                 <input type="text" inputmode="decimal" id="budgetInput" placeholder="15000" autocomplete="off">
-                                <button type="submit" class="btn btn-ink btn-sm" id="budgetButton">Save</button>
-                            </form>
-                        </div>
-                        <p class="note-serial">
-                            <span id="monthLabel" class="note-month">This month</span>
-                            <span id="noteSerial" class="note-serial-no">No. 0000</span>
-                        </p>
-                    </div>
-
-                    <div class="note-main">
-                        <p id="remainingBudget" class="note-amount">₹0</p>
-                        <p class="note-caption">
-                            <span id="remainingCaption">left</span> this month
-                        </p>
-                        <p id="spentSummary" class="note-spent">Spent ₹0 this month</p>
-                    </div>
-
-                    <div id="budgetMeter" class="meter" role="meter" aria-label="Share of monthly budget spent" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                        <div class="meter-track">
-                            <div id="meterFill" class="meter-fill"></div>
-                        </div>
-                        <div id="meterToday" class="meter-today" aria-hidden="true">
-                            <span id="meterTodayLabel" class="meter-today-label">Today</span>
-                        </div>
+                            </span>
+                            <button type="submit" class="btn btn-ink btn-sm" id="budgetButton">Save</button>
+                        </form>
                     </div>
                 </div>
 
-                <div class="stamp" aria-hidden="true">Over budget</div>
+                <p id="remainingBudget" class="hero-amount">₹0</p>
+                <p class="hero-caption"><span id="remainingCaption">left</span> this month</p>
+                <p id="spentSummary" class="hero-spent">Spent ₹0 this month</p>
+
+                <div id="budgetMeter" class="meter" role="meter" aria-label="Share of monthly budget spent" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div class="meter-track">
+                        <div id="meterFill" class="meter-fill"></div>
+                    </div>
+                    <div id="meterToday" class="meter-today" aria-hidden="true">
+                        <span id="meterTodayLabel" class="meter-today-label">Today</span>
+                    </div>
+                </div>
             </div>
 
-            <p id="paceMessage" class="pace-message" data-state="unset">Set a monthly budget on the note to see how much you have left.</p>
+            <aside class="vibe sticker" aria-labelledby="vibeTitle">
+                <span id="vibeEmoji" class="vibe-emoji" aria-hidden="true">✨</span>
+                <p class="vibe-kicker">Vibe check</p>
+                <h2 id="vibeTitle" class="vibe-title">No budget yet</h2>
+                <p id="paceMessage" class="pace-message" data-state="unset">Set a monthly budget to see how much you have left.</p>
+                <p id="noteSerial" class="vibe-count">0 spends logged this month</p>
+            </aside>
         </section>
 
         <div class="split">
-            <!-- Add Expense: a withdrawal slip -->
-            <section id="add" class="add-expense" aria-labelledby="addHeading">
-                <div class="slip">
-                    <div class="slip-head">
-                        <h2 id="addHeading">Add an expense</h2>
-                        <span class="hint">Shortcut <kbd>Alt</kbd> + <kbd>N</kbd></span>
-                    </div>
-                    <form id="expenseForm" novalidate>
-                        <div class="slip-amount">
-                            <label for="expenseAmount">Amount</label>
-                            <div class="slip-amount-box">
-                                <span aria-hidden="true">₹</span>
-                                <input type="text" inputmode="decimal" id="expenseAmount" placeholder="0" autocomplete="off" required>
-                            </div>
-                        </div>
-                        <div class="slip-fields">
-                            <div class="input-group field-title">
-                                <label for="expenseTitle">Paid for</label>
-                                <input type="text" id="expenseTitle" placeholder="Lunch, metro card, rent…" maxlength="100" autocomplete="off" required>
-                            </div>
-                            <fieldset class="input-group field-category">
-                                <legend>Category</legend>
-                                <div class="chips" id="expenseCategory">
-                                    <label class="chip cat-food"><input type="radio" name="expenseCategory" value="food"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-food"/></svg>Food</span></label>
-                                    <label class="chip cat-transport"><input type="radio" name="expenseCategory" value="transport"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-transport"/></svg>Transport</span></label>
-                                    <label class="chip cat-shopping"><input type="radio" name="expenseCategory" value="shopping"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-shopping"/></svg>Shopping</span></label>
-                                    <label class="chip cat-bills"><input type="radio" name="expenseCategory" value="bills"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-bills"/></svg>Bills</span></label>
-                                    <label class="chip cat-entertainment"><input type="radio" name="expenseCategory" value="entertainment"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-entertainment"/></svg>Entertainment</span></label>
-                                    <label class="chip cat-health"><input type="radio" name="expenseCategory" value="health"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-health"/></svg>Health</span></label>
-                                    <label class="chip cat-education"><input type="radio" name="expenseCategory" value="education"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-education"/></svg>Education</span></label>
-                                    <label class="chip cat-other"><input type="radio" name="expenseCategory" value="other"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-other"/></svg>Other</span></label>
-                                </div>
-                            </fieldset>
-                            <div class="input-group field-date">
-                                <label for="expenseDate">Date</label>
-                                <input type="date" id="expenseDate" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-ink btn-block">Add expense</button>
-                    </form>
+            <!-- Add Expense -->
+            <section id="add" class="add-expense card sticker" aria-labelledby="addHeading">
+                <div class="card-head">
+                    <h2 id="addHeading">Log a spend</h2>
+                    <span class="hint"><kbd>Alt</kbd> + <kbd>N</kbd></span>
                 </div>
+                <form id="expenseForm" novalidate>
+                    <div class="amount-field">
+                        <label for="expenseAmount">How much?</label>
+                        <div class="amount-box">
+                            <span aria-hidden="true">₹</span>
+                            <input type="text" inputmode="decimal" id="expenseAmount" placeholder="0" autocomplete="off" required>
+                        </div>
+                    </div>
+                    <div class="form-fields">
+                        <div class="input-group field-title">
+                            <label for="expenseTitle">On what?</label>
+                            <input type="text" id="expenseTitle" placeholder="Boba, metro card, rent…" maxlength="100" autocomplete="off" required>
+                        </div>
+                        <div class="input-group field-date">
+                            <label for="expenseDate">When?</label>
+                            <input type="date" id="expenseDate" required>
+                        </div>
+                        <fieldset class="input-group field-category">
+                            <legend>Category</legend>
+                            <div class="chips" id="expenseCategory">
+                                <label class="chip cat-food"><input type="radio" name="expenseCategory" value="food"><span><span class="cat-blob"><svg class="cat-icon" aria-hidden="true"><use href="#cat-food"/></svg></span>Food</span></label>
+                                <label class="chip cat-transport"><input type="radio" name="expenseCategory" value="transport"><span><span class="cat-blob"><svg class="cat-icon" aria-hidden="true"><use href="#cat-transport"/></svg></span>Transport</span></label>
+                                <label class="chip cat-shopping"><input type="radio" name="expenseCategory" value="shopping"><span><span class="cat-blob"><svg class="cat-icon" aria-hidden="true"><use href="#cat-shopping"/></svg></span>Shopping</span></label>
+                                <label class="chip cat-bills"><input type="radio" name="expenseCategory" value="bills"><span><span class="cat-blob"><svg class="cat-icon" aria-hidden="true"><use href="#cat-bills"/></svg></span>Bills</span></label>
+                                <label class="chip cat-entertainment"><input type="radio" name="expenseCategory" value="entertainment"><span><span class="cat-blob"><svg class="cat-icon" aria-hidden="true"><use href="#cat-entertainment"/></svg></span>Fun</span></label>
+                                <label class="chip cat-health"><input type="radio" name="expenseCategory" value="health"><span><span class="cat-blob"><svg class="cat-icon" aria-hidden="true"><use href="#cat-health"/></svg></span>Health</span></label>
+                                <label class="chip cat-education"><input type="radio" name="expenseCategory" value="education"><span><span class="cat-blob"><svg class="cat-icon" aria-hidden="true"><use href="#cat-education"/></svg></span>Study</span></label>
+                                <label class="chip cat-other"><input type="radio" name="expenseCategory" value="other"><span><span class="cat-blob"><svg class="cat-icon" aria-hidden="true"><use href="#cat-other"/></svg></span>Other</span></label>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <button type="submit" class="btn btn-pop btn-block">Add expense</button>
+                </form>
             </section>
 
             <!-- Category breakdown -->
-            <section class="breakdown" aria-labelledby="breakdownHeading">
-                <h2 id="breakdownHeading">Where it went</h2>
+            <section class="breakdown card sticker" aria-labelledby="breakdownHeading">
+                <div class="card-head">
+                    <h2 id="breakdownHeading">Where it went</h2>
+                </div>
                 <div id="breakdownStrip" class="breakdown-strip" aria-hidden="true" hidden></div>
                 <ul id="categoryBreakdown" class="breakdown-list">
                     <li class="breakdown-empty">Nothing spent this month yet.</li>
@@ -158,49 +144,40 @@
             </section>
         </div>
 
-        <!-- Expense History: a passbook -->
-        <section id="history" class="passbook" aria-labelledby="historyHeading">
-            <div class="passbook-head">
-                <h2 id="historyHeading">Passbook</h2>
+        <!-- Expense History -->
+        <section id="history" class="history card sticker" aria-labelledby="historyHeading">
+            <div class="card-head">
+                <h2 id="historyHeading">History</h2>
                 <div class="header-buttons">
                     <button type="button" id="exportButton" class="btn btn-ghost"><i class="fas fa-file-csv" aria-hidden="true"></i> Export CSV</button>
                     <button type="button" id="clearAllButton" class="btn btn-ghost btn-ghost-danger">Delete all</button>
                 </div>
             </div>
-            <div class="passbook-body">
-                <div class="filter-section">
-                    <input type="search" id="searchInput" placeholder="Search title, category or amount" aria-label="Search expenses">
-                    <select id="categoryFilter" aria-label="Filter by category">
-                        <option value="">All categories</option>
-                        <option value="food">Food & Dining</option>
-                        <option value="transport">Transportation</option>
-                        <option value="entertainment">Entertainment</option>
-                        <option value="shopping">Shopping</option>
-                        <option value="bills">Bills & Utilities</option>
-                        <option value="health">Health & Medical</option>
-                        <option value="education">Education</option>
-                        <option value="other">Other</option>
-                    </select>
-                    <select id="sortFilter" aria-label="Sort expenses">
-                        <option value="">Date (newest first)</option>
-                        <option value="date-oldest">Date (oldest first)</option>
-                        <option value="amount-highest">Amount (highest first)</option>
-                        <option value="amount-lowest">Amount (lowest first)</option>
-                        <option value="category">Category (A–Z)</option>
-                        <option value="title">Title (A–Z)</option>
-                    </select>
-                    <button type="button" id="clearFiltersButton" class="btn btn-ghost" hidden>Clear filters</button>
-                </div>
-                <p id="resultSummary" class="result-summary" aria-live="polite"></p>
-                <div class="ledger-header" aria-hidden="true">
-                    <span>Date</span>
-                    <span>Particulars</span>
-                    <span>Withdrawal</span>
-                    <span class="ledger-bal">Balance</span>
-                    <span></span>
-                </div>
-                <ul id="expensesList" class="expenses-container"></ul>
+            <div class="filter-section">
+                <input type="search" id="searchInput" placeholder="Search title, category or amount" aria-label="Search expenses">
+                <select id="categoryFilter" aria-label="Filter by category">
+                    <option value="">All categories</option>
+                    <option value="food">Food & Dining</option>
+                    <option value="transport">Transportation</option>
+                    <option value="entertainment">Entertainment</option>
+                    <option value="shopping">Shopping</option>
+                    <option value="bills">Bills & Utilities</option>
+                    <option value="health">Health & Medical</option>
+                    <option value="education">Education</option>
+                    <option value="other">Other</option>
+                </select>
+                <select id="sortFilter" aria-label="Sort expenses">
+                    <option value="">Date (newest first)</option>
+                    <option value="date-oldest">Date (oldest first)</option>
+                    <option value="amount-highest">Amount (highest first)</option>
+                    <option value="amount-lowest">Amount (lowest first)</option>
+                    <option value="category">Category (A–Z)</option>
+                    <option value="title">Title (A–Z)</option>
+                </select>
+                <button type="button" id="clearFiltersButton" class="btn btn-ghost" hidden>Clear filters</button>
             </div>
+            <p id="resultSummary" class="result-summary" aria-live="polite"></p>
+            <ul id="expensesList" class="expenses-container"></ul>
         </section>
     </main>
 
