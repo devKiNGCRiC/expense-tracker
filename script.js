@@ -510,19 +510,18 @@ function renderHistory() {
     }
 
     // Apply sorting
-    if (sortType) {
-        applySorting(filteredExpenses, sortType);
-    }
+    // Apply sorting (default: date, newest first - the natural passbook order)
+    applySorting(filteredExpenses, sortType || 'date-newest');
 
     const filtersOn = hasActiveFilters();
     $('clearFiltersButton').hidden = !filtersOn;
     $('clearAllButton').disabled = expenses.length === 0;
     $('exportButton').disabled = expenses.length === 0;
 
-    displayExpenses(filteredExpenses, filtersOn);
+    displayExpenses(filteredExpenses, filtersOn, sortType || 'date-newest');
 }
 
-function displayExpenses(expensesToShow, filtersOn) {
+function displayExpenses(expensesToShow, filtersOn, sortType) {
     const summary = $('resultSummary');
     const shownTotal = formatCurrency(sumAmounts(expensesToShow));
 
@@ -547,7 +546,30 @@ function displayExpenses(expensesToShow, filtersOn) {
         ? `${expensesToShow.length} of ${expenses.length} expenses shown, totalling ${shownTotal}`
         : `${expensesToShow.length} ${noun}, ${shownTotal} in total`;
 
-    expensesList.innerHTML = expensesToShow.map(expense => `
+    // In date order, break the passbook into months with a subtotal for each
+    const groupByMonth = sortType === 'date-newest' || sortType === 'date-oldest';
+    const monthTotals = {};
+    if (groupByMonth) {
+        expensesToShow.forEach(expense => {
+            const key = expense.date.slice(0, 7);
+            monthTotals[key] = (monthTotals[key] || 0) + expense.amount;
+        });
+    }
+    let currentMonth = null;
+
+    expensesList.innerHTML = expensesToShow.map(expense => {
+        let monthHeader = '';
+        const monthKey = expense.date.slice(0, 7);
+        if (groupByMonth && monthKey !== currentMonth) {
+            currentMonth = monthKey;
+            const monthName = parseLocalDate(`${monthKey}-01`).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+            monthHeader = `
+        <li class="ledger-month">
+            <span>${monthName}</span>
+            <span>${formatCurrency(monthTotals[monthKey])}</span>
+        </li>`;
+        }
+        return monthHeader + `
         <li class="expense-item${expense.id === highlightId ? ' is-new' : ''}">
             <span class="expense-date">${formatDate(expense.date)}</span>
             <div class="expense-info">
@@ -560,8 +582,8 @@ function displayExpenses(expensesToShow, filtersOn) {
                     <i class="fas fa-trash" aria-hidden="true"></i>
                 </button>
             </span>
-        </li>
-    `).join('');
+        </li>`;
+    }).join('');
 }
 
 // Clear all filters and search
