@@ -33,11 +33,11 @@ A responsive web app for tracking personal expenses against a monthly budget. Bu
   - 📝 Title (A-Z)
 
 ### 🎨 Design
-A sticker board: chunky ink outlines, hard offset shadows and candy colours on a lilac dot grid.
-- **Money left**: a big butter-yellow sticker with what's left this month and a striped meter with a pin for today
-- **Vibe check**: changes colour and emoji with your spending pace
+Liquid glass: frosted panels with light-catching rims float over slowly drifting colour glows.
+- **Money left**: what's left this month in large type, with a glowing meter and a pin for today
+- **Vibe check**: a glass card tinted by your spending pace
 - **Category colours**: each category has its own colour and line icon, shared by the chips, the breakdown and the history
-- **Type**: [Modak](https://fonts.google.com/specimen/Modak) for headings, [Baloo 2](https://fonts.google.com/specimen/Baloo+2) for amounts and the interface
+- **Type**: [Anek Latin](https://fonts.google.com/specimen/Anek+Latin) throughout, set wide for the big numbers
 
 ### 🧭 UI/UX
 - **Responsive Design**: Works on desktop, tablet, and mobile

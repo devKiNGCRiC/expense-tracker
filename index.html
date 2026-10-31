@@ -4,15 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Track daily expenses against a monthly budget in rupees. Data stays in your browser.">
-    <meta name="theme-color" content="#EFE7FF">
+    <meta name="theme-color" content="#120E24">
     <title>Expense Tracker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&family=Modak&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wdth,wght@75..125,300..800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Slowly drifting colour glows behind the glass -->
+    <div class="backdrop" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
     <a class="skip-link" href="#add">Skip to add expense</a>
 
     <!-- Category icons, drawn as one line-art set -->
@@ -45,7 +48,7 @@
     <main class="main-content container">
         <!-- Overview: money left + vibe check -->
         <section id="overview" class="overview" aria-labelledby="monthLabel" data-vibe="unset">
-            <div class="hero sticker">
+            <div class="hero glass">
                 <div class="hero-top">
                     <h1 id="monthLabel" class="hero-month">This month</h1>
                     <div class="hero-budget">
@@ -81,7 +84,7 @@
                 </div>
             </div>
 
-            <aside class="vibe sticker" aria-labelledby="vibeTitle">
+            <aside class="vibe glass" aria-labelledby="vibeTitle">
                 <span id="vibeEmoji" class="vibe-emoji" aria-hidden="true">✨</span>
                 <p class="vibe-kicker">Vibe check</p>
                 <h2 id="vibeTitle" class="vibe-title">No budget yet</h2>
@@ -92,7 +95,7 @@
 
         <div class="split">
             <!-- Add Expense -->
-            <section id="add" class="add-expense card sticker" aria-labelledby="addHeading">
+            <section id="add" class="add-expense card glass" aria-labelledby="addHeading">
                 <div class="card-head">
                     <h2 id="addHeading">Log a spend</h2>
                     <span class="hint"><kbd>Alt</kbd> + <kbd>N</kbd></span>
@@ -133,7 +136,7 @@
             </section>
 
             <!-- Category breakdown -->
-            <section class="breakdown card sticker" aria-labelledby="breakdownHeading">
+            <section class="breakdown card glass" aria-labelledby="breakdownHeading">
                 <div class="card-head">
                     <h2 id="breakdownHeading">Where it went</h2>
                 </div>
@@ -145,7 +148,7 @@
         </div>
 
         <!-- Expense History -->
-        <section id="history" class="history card sticker" aria-labelledby="historyHeading">
+        <section id="history" class="history card glass" aria-labelledby="historyHeading">
             <div class="card-head">
                 <h2 id="historyHeading">History</h2>
                 <div class="header-buttons">
