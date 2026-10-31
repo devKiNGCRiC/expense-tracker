@@ -5,15 +5,16 @@ let editingBudget = false;  // budget form open on the note
 let highlightId = null;     // passbook row to flash after the next render
 
 // Category metadata (used by the list, breakdown, search and CSV export)
+// Icons are <symbol>s in index.html (#cat-food, ...); colours are .cat-* classes in style.css
 const CATEGORIES = {
-    food: { icon: '🍽️', name: 'Food & Dining' },
-    transport: { icon: '🚗', name: 'Transportation' },
-    entertainment: { icon: '🎬', name: 'Entertainment' },
-    shopping: { icon: '🛍️', name: 'Shopping' },
-    bills: { icon: '💡', name: 'Bills & Utilities' },
-    health: { icon: '🏥', name: 'Health & Medical' },
-    education: { icon: '📚', name: 'Education' },
-    other: { icon: '📦', name: 'Other' }
+    food: { name: 'Food & Dining' },
+    transport: { name: 'Transportation' },
+    entertainment: { name: 'Entertainment' },
+    shopping: { name: 'Shopping' },
+    bills: { name: 'Bills & Utilities' },
+    health: { name: 'Health & Medical' },
+    education: { name: 'Education' },
+    other: { name: 'Other' }
 };
 
 // DOM Elements
@@ -144,8 +145,12 @@ function escapeHTML(text) {
     return div.innerHTML.replace(/"/g, '&quot;');
 }
 
+function getCategoryKey(category) {
+    return CATEGORIES[category] ? category : 'other';
+}
+
 function getCategoryIcon(category) {
-    return (CATEGORIES[category] || CATEGORIES.other).icon;
+    return `<svg class="cat-icon" aria-hidden="true"><use href="#cat-${getCategoryKey(category)}"/></svg>`;
 }
 
 function getCategoryName(category) {
@@ -244,16 +249,21 @@ function getPaceMessage(spent, remaining, day, daysInMonth, ahead) {
         return `Spending ahead of pace. At this rate you'll spend ${formatCurrency(Math.round(projected))} by the end of the month.`;
     }
     const daysLeft = daysInMonth - day + 1; // include today
+    if (daysLeft === 1) {
+        return `On track. Last day of the month, with ${formatCurrency(remaining)} left to spend.`;
+    }
     return `On track. You can spend about ${formatCurrency(Math.floor(remaining / daysLeft))} a day for the rest of the month.`;
 }
 
 // This month's spending per category, largest first
 function renderBreakdown() {
     const list = $('categoryBreakdown');
+    const strip = $('breakdownStrip');
     const monthExpenses = getMonthExpenses();
     const total = sumAmounts(monthExpenses);
 
     if (monthExpenses.length === 0) {
+        strip.hidden = true;
         list.innerHTML = '<li class="breakdown-empty">Nothing spent this month yet.</li>';
         return;
     }
@@ -266,8 +276,15 @@ function renderBreakdown() {
     const rows = Object.entries(totals).sort((a, b) => b[1] - a[1]);
     const largest = rows[0][1];
 
+    // One strip for the whole budget: a coloured segment per category, the rest left blank
+    const scale = Math.max(budget, total);
+    strip.hidden = false;
+    strip.innerHTML = rows.map(([category, amount]) =>
+        `<span class="cat-${getCategoryKey(category)}" style="width: ${(amount / scale) * 100}%"></span>`
+    ).join('');
+
     list.innerHTML = rows.map(([category, amount]) => `
-        <li class="breakdown-row">
+        <li class="breakdown-row cat-${getCategoryKey(category)}">
             <span class="breakdown-name">${getCategoryIcon(category)} ${getCategoryName(category)}</span>
             <span class="breakdown-amount">
                 <span class="breakdown-share">${Math.round((amount / total) * 100)}%</span>
@@ -557,6 +574,15 @@ function displayExpenses(expensesToShow, filtersOn, sortType) {
     }
     let currentMonth = null;
 
+    // Running balance per month, like a passbook: budget minus withdrawals so far
+    const showBalance = budget > 0;
+    const balances = showBalance ? getRunningBalances() : null;
+    $('history').classList.toggle('has-balance', showBalance);
+    const balanceCell = value => {
+        const text = value < 0 ? `−${formatCurrency(-value)}` : formatCurrency(value);
+        return `<span class="expense-balance${value < 0 ? ' is-negative' : ''}"><span class="balance-label">Balance </span>${text}</span>`;
+    };
+
     expensesList.innerHTML = expensesToShow.map(expense => {
         let monthHeader = '';
         const monthKey = expense.date.slice(0, 7);
@@ -567,6 +593,7 @@ function displayExpenses(expensesToShow, filtersOn, sortType) {
         <li class="ledger-month">
             <span>${monthName}</span>
             <span>${formatCurrency(monthTotals[monthKey])}</span>
+            ${showBalance ? balanceCell(budget - sumAmounts(expenses.filter(e => e.date.startsWith(monthKey)))) : ''}
         </li>`;
         }
         return monthHeader + `
@@ -574,9 +601,10 @@ function displayExpenses(expensesToShow, filtersOn, sortType) {
             <span class="expense-date">${formatDate(expense.date)}</span>
             <div class="expense-info">
                 <div class="expense-title">${escapeHTML(expense.title)}</div>
-                <div class="expense-category">${getCategoryIcon(expense.category)} ${getCategoryName(expense.category)}</div>
+                <div class="expense-category cat-${getCategoryKey(expense.category)}">${getCategoryIcon(expense.category)} ${getCategoryName(expense.category)}</div>
             </div>
             <span class="expense-amount">${formatCurrency(expense.amount)}</span>
+            ${showBalance ? balanceCell(balances.get(expense.id)) : ''}
             <span class="expense-action">
                 <button type="button" class="delete-btn" data-id="${expense.id}" aria-label="Delete ${escapeHTML(expense.title)}">
                     <i class="fas fa-trash" aria-hidden="true"></i>
@@ -584,6 +612,25 @@ function displayExpenses(expensesToShow, filtersOn, sortType) {
             </span>
         </li>`;
     }).join('');
+}
+
+// Balance left after each expense within its own month, in the order spent
+function getRunningBalances() {
+    const balances = new Map();
+    const byMonth = {};
+    expenses.forEach(expense => {
+        const key = expense.date.slice(0, 7);
+        (byMonth[key] = byMonth[key] || []).push(expense);
+    });
+    Object.values(byMonth).forEach(monthList => {
+        let left = budget;
+        applySorting(monthList, 'date-oldest');
+        monthList.forEach(expense => {
+            left -= expense.amount;
+            balances.set(expense.id, left);
+        });
+    });
+    return balances;
 }
 
 // Clear all filters and search

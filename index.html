@@ -24,6 +24,18 @@
         </filter>
     </svg>
 
+    <!-- Category icons, drawn as one line-art set -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+        <symbol id="cat-food" viewBox="0 0 24 24"><path d="M3.5 12h17a8.5 8.5 0 0 1-17 0z"/><path d="M9 8.5c0-1.6 1.6-1.6 1.6-3.2M13.6 8.5c0-1.6 1.6-1.6 1.6-3.2"/></symbol>
+        <symbol id="cat-transport" viewBox="0 0 24 24"><path d="M3 16.5v-4L5.6 7h12.8l2.6 5.5v4z"/><path d="M3 12.5h18"/><circle cx="7.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/></symbol>
+        <symbol id="cat-shopping" viewBox="0 0 24 24"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 10V6.5a3 3 0 0 1 6 0V10"/></symbol>
+        <symbol id="cat-bills" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></symbol>
+        <symbol id="cat-entertainment" viewBox="0 0 24 24"><path d="M3.5 6.5h17v3.5a2 2 0 0 0 0 4v3.5h-17V14a2 2 0 0 0 0-4z"/><path d="M14.5 7v1.5M14.5 11v2M14.5 15.5V17"/></symbol>
+        <symbol id="cat-health" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4.5"/><path d="M12 8.5v7M8.5 12h7"/></symbol>
+        <symbol id="cat-education" viewBox="0 0 24 24"><path d="M3 5.8c3-1 6-1 9 .7 3-1.7 6-1.7 9-.7v13c-3-1-6-1-9 .7-3-1.7-6-1.7-9-.7z"/><path d="M12 6.5v13"/></symbol>
+        <symbol id="cat-other" viewBox="0 0 24 24"><path d="M4 7.8 12 4l8 3.8v8.4L12 20l-8-3.8z"/><path d="m4 7.8 8 3.9 8-3.9M12 11.7V20"/></symbol>
+    </svg>
+
     <!-- Navigation Bar -->
     <header class="navbar">
         <nav class="nav-container" aria-label="Main">
@@ -116,14 +128,14 @@
                             <fieldset class="input-group field-category">
                                 <legend>Category</legend>
                                 <div class="chips" id="expenseCategory">
-                                    <label class="chip"><input type="radio" name="expenseCategory" value="food"><span>🍽️ Food</span></label>
-                                    <label class="chip"><input type="radio" name="expenseCategory" value="transport"><span>🚗 Transport</span></label>
-                                    <label class="chip"><input type="radio" name="expenseCategory" value="shopping"><span>🛍️ Shopping</span></label>
-                                    <label class="chip"><input type="radio" name="expenseCategory" value="bills"><span>💡 Bills</span></label>
-                                    <label class="chip"><input type="radio" name="expenseCategory" value="entertainment"><span>🎬 Entertainment</span></label>
-                                    <label class="chip"><input type="radio" name="expenseCategory" value="health"><span>🏥 Health</span></label>
-                                    <label class="chip"><input type="radio" name="expenseCategory" value="education"><span>📚 Education</span></label>
-                                    <label class="chip"><input type="radio" name="expenseCategory" value="other"><span>📦 Other</span></label>
+                                    <label class="chip cat-food"><input type="radio" name="expenseCategory" value="food"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-food"/></svg>Food</span></label>
+                                    <label class="chip cat-transport"><input type="radio" name="expenseCategory" value="transport"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-transport"/></svg>Transport</span></label>
+                                    <label class="chip cat-shopping"><input type="radio" name="expenseCategory" value="shopping"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-shopping"/></svg>Shopping</span></label>
+                                    <label class="chip cat-bills"><input type="radio" name="expenseCategory" value="bills"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-bills"/></svg>Bills</span></label>
+                                    <label class="chip cat-entertainment"><input type="radio" name="expenseCategory" value="entertainment"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-entertainment"/></svg>Entertainment</span></label>
+                                    <label class="chip cat-health"><input type="radio" name="expenseCategory" value="health"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-health"/></svg>Health</span></label>
+                                    <label class="chip cat-education"><input type="radio" name="expenseCategory" value="education"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-education"/></svg>Education</span></label>
+                                    <label class="chip cat-other"><input type="radio" name="expenseCategory" value="other"><span><svg class="cat-icon" aria-hidden="true"><use href="#cat-other"/></svg>Other</span></label>
                                 </div>
                             </fieldset>
                             <div class="input-group field-date">
@@ -139,6 +151,7 @@
             <!-- Category breakdown -->
             <section class="breakdown" aria-labelledby="breakdownHeading">
                 <h2 id="breakdownHeading">Where it went</h2>
+                <div id="breakdownStrip" class="breakdown-strip" aria-hidden="true" hidden></div>
                 <ul id="categoryBreakdown" class="breakdown-list">
                     <li class="breakdown-empty">Nothing spent this month yet.</li>
                 </ul>
@@ -159,14 +172,14 @@
                     <input type="search" id="searchInput" placeholder="Search title, category or amount" aria-label="Search expenses">
                     <select id="categoryFilter" aria-label="Filter by category">
                         <option value="">All categories</option>
-                        <option value="food">🍽️ Food & Dining</option>
-                        <option value="transport">🚗 Transportation</option>
-                        <option value="entertainment">🎬 Entertainment</option>
-                        <option value="shopping">🛍️ Shopping</option>
-                        <option value="bills">💡 Bills & Utilities</option>
-                        <option value="health">🏥 Health & Medical</option>
-                        <option value="education">📚 Education</option>
-                        <option value="other">📦 Other</option>
+                        <option value="food">Food & Dining</option>
+                        <option value="transport">Transportation</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="bills">Bills & Utilities</option>
+                        <option value="health">Health & Medical</option>
+                        <option value="education">Education</option>
+                        <option value="other">Other</option>
                     </select>
                     <select id="sortFilter" aria-label="Sort expenses">
                         <option value="">Date (newest first)</option>
@@ -183,6 +196,7 @@
                     <span>Date</span>
                     <span>Particulars</span>
                     <span>Withdrawal</span>
+                    <span class="ledger-bal">Balance</span>
                     <span></span>
                 </div>
                 <ul id="expensesList" class="expenses-container"></ul>

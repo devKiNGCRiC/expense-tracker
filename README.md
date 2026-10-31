@@ -10,8 +10,8 @@ A responsive web app for tracking personal expenses against a monthly budget. Bu
 - **Add Expenses**: Record daily expenses with title, amount, a one-tap category chip, and date
 - **Monthly Budget**: See how much is left this month; past months don't count against it. Edit it right on the note
 - **Pace Meter**: Compares budget used with how far through the month you are, and suggests a daily allowance
-- **Passbook**: Expense history in date order, grouped by month with a subtotal for each
-- **Category Breakdown**: This month's spending per category
+- **Passbook**: Expense history in date order, grouped by month with a subtotal for each and a running balance against the budget
+- **Category Breakdown**: This month's spending per category, with one strip showing how much of the budget each category took
 - **Budget Alerts**: A notice when spending crosses 50%, 80% and 100% of the budget
 - **Undo Delete**: Deleted expenses can be restored from the notification
 - **Data Persistence**: Automatic saving with localStorage
@@ -41,7 +41,7 @@ The month is shown as a banknote lying on an indigo desk:
 
 ### 🧭 UI/UX
 - **Responsive Design**: Works on desktop, tablet, and mobile
-- **Category Icons**: Visual representation of expense categories
+- **Category Icons**: A drawn line icon and a colour for each category, used in the form, the breakdown and the passbook
 - **Clear Feedback**: Short notifications, highlighted invalid fields, and distinct empty states
 - **Accessible**: Keyboard-friendly controls, screen-reader labels and reduced-motion support
 
